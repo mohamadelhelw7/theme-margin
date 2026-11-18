@@ -244,19 +244,35 @@
       "blocks": {
         "q_1": {
           "type": "_faq-item",
-          "settings": {}
+          "settings": {
+            "question": "Which size should I choose?",
+            "answer": "<p>Open the size guide next to the sizes. Add your own fit notes here, for example whether a piece runs large.</p>",
+            "open": true
+          }
         },
         "q_2": {
           "type": "_faq-item",
-          "settings": {}
+          "settings": {
+            "question": "How do I care for my clothes?",
+            "answer": "<p>Add washing and care instructions for your pieces.</p>",
+            "open": false
+          }
         },
         "q_3": {
           "type": "_faq-item",
-          "settings": {}
+          "settings": {
+            "question": "How long does delivery take?",
+            "answer": "<p>Add your delivery times and the areas you ship to.</p>",
+            "open": false
+          }
         },
         "q_4": {
           "type": "_faq-item",
-          "settings": {}
+          "settings": {
+            "question": "Can I return or exchange an item?",
+            "answer": "<p>Add your return and exchange policy, or link to your refund policy page.</p>",
+            "open": false
+          }
         }
       },
       "block_order": [

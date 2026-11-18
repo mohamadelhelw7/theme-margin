@@ -11,7 +11,12 @@
   assign upsell_style = block.settings.style
   assign upsell_limit = block.settings.limit
   assign upsell_url = ''
-  if block.settings.source != 'picked' and product != blank
+  assign upsell_picked = block.settings.products | size
+  assign upsell_use_picked = false
+  if block.settings.source == 'picked' or upsell_picked > 0
+    assign upsell_use_picked = true
+  endif
+  if upsell_use_picked == false and product != blank
     assign upsell_url = routes.product_recommendations_url | append: '?product_id=' | append: product.id | append: '&limit=' | append: upsell_limit | append: '&intent=' | append: block.settings.source | append: '&section_id=upsell-render'
   endif
 -%}
@@ -19,6 +24,7 @@
 <product-upsell
   class="upsell upsell--{{ upsell_style }}"
   data-style="{{ upsell_style }}"
+  data-limit="{{ upsell_limit }}"
   {% if upsell_url != blank %}
     data-url="{{ upsell_url }}" hidden
   {% endif %}
@@ -28,7 +34,7 @@
     <p class="upsell__heading">{{ block.settings.heading | escape }}</p>
   {%- endif -%}
   <div class="upsell__items" data-upsell-target>
-    {%- if block.settings.source == 'picked' -%}
+    {%- if upsell_use_picked -%}
       {%- for picked in block.settings.products limit: upsell_limit -%}
         {%- if picked.id == product.id -%}{%- continue -%}{%- endif -%}
         {% render 'upsell-option', product: picked, style: upsell_style %}
@@ -38,7 +44,7 @@
   {%- if upsell_style == 'checkbox' -%}
     <p class="upsell__note">{{ 'products.upsell.added_together' | t }}</p>
   {%- endif -%}
-  {%- if request.design_mode and block.settings.source == 'picked' and block.settings.products == empty -%}
+  {%- if request.design_mode and upsell_use_picked and upsell_picked == 0 -%}
     <p class="text-only-hint">{{ 'products.upsell.editor_hint' | t }}</p>
   {%- endif -%}
 </product-upsell>
@@ -60,6 +66,8 @@
         const results = doc && doc.querySelector(`[data-style="${this.dataset.style}"]`);
         if (!target || !results) return;
         target.innerHTML = results.innerHTML;
+        const limit = Number(this.dataset.limit) || 0;
+        if (limit) Array.from(target.querySelectorAll('[data-upsell-item]')).slice(limit).forEach((item) => item.remove());
         this.hidden = !target.querySelector('[data-upsell-item]');
       };
       if (ProductUpsell.cache.has(url)) {
@@ -258,9 +266,9 @@
         { "value": "picked", "label": "Products I pick" }
       ],
       "default": "related",
-      "info": "Set complementary products in the Search & Discovery app. Related products come from Shopify automatically."
+      "info": "Related products come from Shopify, and complementary ones from the Search & Discovery app. While Shopify has no suggestions for a product yet, the block shows other products from its collection."
     },
-    { "type": "product_list", "id": "products", "label": "Products to suggest", "limit": 6, "info": "Used with Products I pick" },
+    { "type": "product_list", "id": "products", "label": "Products to suggest", "limit": 6, "info": "Products you pick here are always shown, whatever the Products setting says." },
     { "type": "range", "id": "limit", "label": "Products to show", "min": 1, "max": 6, "step": 1, "default": 3 }
   ],
   "presets": [
