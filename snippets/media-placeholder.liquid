@@ -1,0 +1,196 @@
+{% doc %}
+  Fills a frame that has no image yet. Product frames show one flat clothing drawing with small
+  crop marks in the corners, like a spec sheet. Wide frames (heroes, collections, lifestyle and
+  video) lay three pieces flat in ruled cells. When a product or collection name says what it is (hoodie, tee, pants,
+  cap, sneaker, bag, jacket, in English or Arabic), the drawing matches it.
+  Theme settings → Layout → Missing photos can switch it to a plain tint.
+  Inside the theme editor it also shows an "Add an image" hint, which shoppers never see.
+
+  @param {string} [kind] - product (one piece, default), article, collection, hero, lifestyle or video (three pieces when the frame is wide)
+  @param {number} [index] - Position in a list, used to vary the drawing and its color
+  @param {string} [label] - A product or collection name, used to pick a matching drawing
+
+  @example
+  {% render 'media-placeholder', kind: 'product', index: forloop.index, label: product.title %}
+{% enddoc %}
+
+{%- liquid
+  assign ph_kind = kind | default: 'product'
+  assign ph_index = index | default: 1 | plus: 0
+  assign ph_wide = false
+  if ph_kind == 'hero' or ph_kind == 'lifestyle' or ph_kind == 'collection' or ph_kind == 'video'
+    assign ph_wide = true
+  endif
+
+  assign ph_items = 'hoodie,tee,pants,cap,jacket,sneaker,tote' | split: ','
+  if ph_kind == 'article'
+    assign ph_items = 'tote,cap,sneaker,tee,jacket' | split: ','
+  endif
+  assign ph_pick = ph_index | minus: 1 | modulo: ph_items.size
+  assign ph_item = ph_items[ph_pick]
+
+  assign ph_label = label | downcase
+  if ph_label contains 'hood' or ph_label contains 'sweat' or ph_label contains 'هودي' or ph_label contains 'سويت'
+    assign ph_item = 'hoodie'
+  elsif ph_label contains 'jacket' or ph_label contains 'coat' or ph_label contains 'bomber' or ph_label contains 'جاكيت' or ph_label contains 'جاكت' or ph_label contains 'معطف'
+    assign ph_item = 'jacket'
+  elsif ph_label contains 'pant' or ph_label contains 'trouser' or ph_label contains 'jean' or ph_label contains 'cargo' or ph_label contains 'jogger' or ph_label contains 'short' or ph_label contains 'بنطلون' or ph_label contains 'جينز' or ph_label contains 'شورت'
+    assign ph_item = 'pants'
+  elsif ph_label contains 'cap' or ph_label contains 'hat' or ph_label contains 'beanie' or ph_label contains 'كاب' or ph_label contains 'قبعة' or ph_label contains 'طاقية'
+    assign ph_item = 'cap'
+  elsif ph_label contains 'shoe' or ph_label contains 'sneaker' or ph_label contains 'boot' or ph_label contains 'كوتشي' or ph_label contains 'حذاء' or ph_label contains 'جزمة'
+    assign ph_item = 'sneaker'
+  elsif ph_label contains 'bag' or ph_label contains 'tote' or ph_label contains 'backpack' or ph_label contains 'شنطة' or ph_label contains 'حقيبة'
+    assign ph_item = 'tote'
+  elsif ph_label contains 'tee' or ph_label contains 'shirt' or ph_label contains 'top' or ph_label contains 'تيشيرت' or ph_label contains 'تيشرت' or ph_label contains 'قميص'
+    assign ph_item = 'tee'
+  endif
+
+  assign ph_tone = ph_index | modulo: 4 | plus: 1
+  assign ph_side_a = ph_index | modulo: 7
+  assign ph_side_b = ph_index | plus: 3 | modulo: 7
+  if ph_items[ph_side_a] == ph_item
+    assign ph_side_a = ph_index | plus: 5 | modulo: 7
+  endif
+  assign ph_tone_a = ph_tone | plus: 1 | modulo: 4 | plus: 1
+  assign ph_tone_b = ph_tone | plus: 2 | modulo: 4 | plus: 1
+-%}
+
+{%- if settings.placeholder_style == 'plain' -%}
+  <span class="media-placeholder" aria-hidden="true">
+    {%- if request.design_mode -%}
+      <span class="media-placeholder__hint">{{ 'general.placeholder.image' | t }}</span>
+    {%- endif -%}
+  </span>
+{%- else -%}
+  <span class="media-placeholder media-placeholder--art{% if ph_wide %} media-placeholder--row{% endif %}" aria-hidden="true">
+    {%- if ph_wide -%}
+      <span class="media-placeholder__row">
+        <span class="media-placeholder__cell media-placeholder__cell--side">{% render 'placeholder-art', name: ph_items[ph_side_a], tone: ph_tone_a %}</span>
+        <span class="media-placeholder__cell">{% render 'placeholder-art', name: ph_item, tone: ph_tone %}</span>
+        <span class="media-placeholder__cell media-placeholder__cell--side">{% render 'placeholder-art', name: ph_items[ph_side_b], tone: ph_tone_b %}</span>
+      </span>
+    {%- else -%}
+      <span class="media-placeholder__single">{% render 'placeholder-art', name: ph_item, tone: ph_tone %}</span>
+    {%- endif -%}
+    {%- if request.design_mode -%}
+      <span class="media-placeholder__hint">{{ 'general.placeholder.image' | t }}</span>
+    {%- endif -%}
+  </span>
+{%- endif -%}
+
+{% stylesheet %}
+  :where(.media-placeholder) {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    background:
+      radial-gradient(120% 90% at 30% 20%, color-mix(in srgb, #ffffff 35%, transparent), transparent 60%),
+      linear-gradient(160deg, color-mix(in srgb, var(--color-text) 3%, transparent), color-mix(in srgb, var(--color-text) 9%, transparent));
+  }
+  .media-placeholder__hint {
+    position: absolute;
+    z-index: 3;
+    top: max(10px, 4cqmin);
+    inset-inline-start: 50%;
+    translate: -50% 0;
+    padding: 4px 10px;
+    white-space: nowrap;
+    font-size: 0.6875rem;
+    letter-spacing: var(--label-ls);
+    text-transform: var(--label-case);
+    color: color-mix(in srgb, var(--color-text) 60%, transparent);
+    background: color-mix(in srgb, var(--color-bg) 80%, transparent);
+  }
+  [dir='rtl'] .media-placeholder__hint {
+    translate: 50% 0;
+  }
+  .media-placeholder:not(.media-placeholder--art) .media-placeholder__hint {
+    position: relative;
+    top: auto;
+    inset-inline-start: auto;
+    translate: none;
+  }
+
+  /* A light well with crop marks in the corners, like a spec sheet */
+  :where(.media-placeholder--art) {
+    container: ph / size;
+    background-color: var(--card-tint, var(--tile-bg, var(--color-surface)));
+    --mark: color-mix(in srgb, var(--color-text) 38%, transparent);
+    --mark-size: max(10px, 4cqmin);
+    background-image:
+      linear-gradient(var(--mark), var(--mark)), linear-gradient(var(--mark), var(--mark)),
+      linear-gradient(var(--mark), var(--mark)), linear-gradient(var(--mark), var(--mark)),
+      linear-gradient(var(--mark), var(--mark)), linear-gradient(var(--mark), var(--mark)),
+      linear-gradient(var(--mark), var(--mark)), linear-gradient(var(--mark), var(--mark));
+    background-size:
+      var(--mark-size) 1px, 1px var(--mark-size), var(--mark-size) 1px, 1px var(--mark-size),
+      var(--mark-size) 1px, 1px var(--mark-size), var(--mark-size) 1px, 1px var(--mark-size);
+    background-position:
+      left 8px top 8px, left 8px top 8px, right 8px top 8px, right 8px top 8px,
+      left 8px bottom 8px, left 8px bottom 8px, right 8px bottom 8px, right 8px bottom 8px;
+    background-repeat: no-repeat;
+  }
+  .media-placeholder__single {
+    position: absolute;
+    inset: 16% 16% 14%;
+    display: grid;
+    place-items: center;
+  }
+  .media-placeholder__single .garm {
+    width: min(100%, 92cqh);
+  }
+
+  /* Wide frames: three pieces laid flat in ruled cells */
+  .media-placeholder__row {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .media-placeholder__cell {
+    display: grid;
+    place-items: center;
+    padding: 12% 14%;
+    min-width: 0;
+  }
+  .media-placeholder__cell + .media-placeholder__cell {
+    border-inline-start: 1px solid color-mix(in srgb, var(--color-text) 16%, transparent);
+  }
+  .media-placeholder__cell .garm {
+    width: min(100%, 70cqh);
+  }
+  @container ph (aspect-ratio < 1.15) {
+    .media-placeholder__row {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .media-placeholder__cell--side {
+      display: none;
+    }
+    .media-placeholder__cell .garm {
+      width: min(76%, 80cqh);
+    }
+  }
+
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .media-placeholder__single .garm {
+      transition: translate 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+    .product-card:hover .media-placeholder__single .garm {
+      translate: 0 -3%;
+    }
+    .media-placeholder__cell .garm {
+      transition: translate 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+  }
+
+  /* Fine ruled lines behind sections shown as text only */
+  :root,
+  [class*='color-scheme-'] {
+    --text-only-texture-size: 100% 48px;
+    --text-only-mask: linear-gradient(to bottom, #000000, transparent 85%);
+    --text-only-texture: linear-gradient(to bottom, transparent 47px, color-mix(in srgb, var(--color-text) 8%, transparent) 47px);
+  }
+{% endstylesheet %}

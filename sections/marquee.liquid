@@ -1,0 +1,94 @@
+<div
+  class="section color-{{ section.settings.color_scheme }}"
+  style="--pt: var(--space-{{ section.settings.padding_top }}); --pb: var(--space-{{ section.settings.padding_bottom }});"
+>
+  <marquee-band
+    class="marquee marquee--{{ section.settings.size }} marquee--font-{{ section.settings.font }} marquee--sep-{{ section.settings.separator }}{% if section.settings.uppercase %} marquee--upper{% endif %}{% if section.settings.borders %} marquee--borders{% endif %}{% if section.settings.tilt %} marquee--tilt{% endif %}"
+    data-speed="{{ section.settings.speed }}"
+    data-direction="{{ section.settings.direction }}"
+    data-velocity="{{ section.settings.react_to_scroll }}"
+  >
+    <div class="marquee__viewport">
+      <div class="marquee__track">
+        <div class="marquee__group">
+          {% content_for 'blocks' %}
+        </div>
+      </div>
+    </div>
+  </marquee-band>
+</div>
+
+{% schema %}
+{
+  "name": "Marquee",
+  "tag": "section",
+  "class": "marquee-section",
+  "max_blocks": 12,
+  "blocks": [{ "type": "_marquee-item" }],
+  "settings": [
+    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1" },
+    {
+      "type": "select",
+      "id": "size",
+      "label": "Text size",
+      "options": [
+        { "value": "small", "label": "Small" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "large", "label": "Large" },
+        { "value": "huge", "label": "Huge" }
+      ],
+      "default": "large"
+    },
+    {
+      "type": "select",
+      "id": "font",
+      "label": "Font",
+      "options": [
+        { "value": "heading", "label": "Heading font" },
+        { "value": "body", "label": "Body font" }
+      ],
+      "default": "heading"
+    },
+    { "type": "checkbox", "id": "uppercase", "label": "Capital letters", "default": false },
+    {
+      "type": "select",
+      "id": "separator",
+      "label": "Separator",
+      "options": [
+        { "value": "star", "label": "Star" },
+        { "value": "dot", "label": "Dot" },
+        { "value": "slash", "label": "Slash" },
+        { "value": "none", "label": "None" }
+      ],
+      "default": "star"
+    },
+    { "type": "range", "id": "speed", "label": "Speed", "info": "Pixels per second", "min": 20, "max": 200, "step": 10, "default": 60 },
+    {
+      "type": "select",
+      "id": "direction",
+      "label": "Direction",
+      "options": [
+        { "value": "forward", "label": "With reading direction" },
+        { "value": "reverse", "label": "Against reading direction" }
+      ],
+      "default": "forward"
+    },
+    { "type": "checkbox", "id": "react_to_scroll", "label": "Speed up while scrolling", "info": "Moves faster when shoppers scroll quickly and turns around when they scroll up", "default": false },
+    { "type": "checkbox", "id": "borders", "label": "Lines above and below", "default": true },
+    { "type": "checkbox", "id": "tilt", "label": "Tilt slightly", "default": false },
+    { "type": "select", "id": "padding_top", "label": "Top spacing", "options": [{ "value": "none", "label": "None" }, { "value": "small", "label": "Small" }, { "value": "medium", "label": "Medium" }, { "value": "large", "label": "Large" }], "default": "large" },
+    { "type": "select", "id": "padding_bottom", "label": "Bottom spacing", "options": [{ "value": "none", "label": "None" }, { "value": "small", "label": "Small" }, { "value": "medium", "label": "Medium" }, { "value": "large", "label": "Large" }], "default": "none" }
+  ],
+  "presets": [
+    {
+      "name": "Marquee",
+      "blocks": [
+        { "type": "_marquee-item", "settings": { "text": "Hoodies" } },
+        { "type": "_marquee-item", "settings": { "text": "Tees" } },
+        { "type": "_marquee-item", "settings": { "text": "Bottoms" } },
+        { "type": "_marquee-item", "settings": { "text": "New season" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,38 @@
+{% doc %}
+  One review in the Letters section, set like a short letter: a place or date line, the stars, the
+  text and an italic signature with the product reviewed. Paste real reviews only.
+{% enddoc %}
+
+{%- assign reviewed = block.settings.product -%}
+
+<li class="letter" {{ block.shopify_attributes }}>
+  <div class="letter__top">
+    {%- if block.settings.dateline != blank -%}
+      <span class="letter__dateline caption">{{ block.settings.dateline | escape }}</span>
+    {%- endif -%}
+    <span class="letter__stars">{% render 'stars', rating: block.settings.rating, scale: 5 %}</span>
+  </div>
+  <blockquote class="letter__body">
+    <p>{{ block.settings.text | escape | newline_to_br }}</p>
+  </blockquote>
+  <p class="letter__sign">
+    <span class="caption">— {{ block.settings.author | escape }}</span>
+    {%- if reviewed != blank -%}
+      <a class="letter__product" href="{{ reviewed.url }}">{{ reviewed.title | escape }}</a>
+    {%- endif -%}
+  </p>
+</li>
+
+{% schema %}
+{
+  "name": "Letter",
+  "settings": [
+    { "type": "range", "id": "rating", "label": "Stars", "min": 1, "max": 5, "step": 1, "default": 5 },
+    { "type": "textarea", "id": "text", "label": "Review", "default": "Paste a real review from a customer here." },
+    { "type": "text", "id": "author", "label": "Customer name", "default": "Customer name" },
+    { "type": "text", "id": "dateline", "label": "Place or date", "info": "For example the customer's city or the month they wrote" },
+    { "type": "product", "id": "product", "label": "Product reviewed" }
+  ],
+  "presets": [{ "name": "Letter" }]
+}
+{% endschema %}

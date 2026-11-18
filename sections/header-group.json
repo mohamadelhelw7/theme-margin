@@ -1,0 +1,74 @@
+{
+  "type": "header",
+  "name": "Header",
+  "sections": {
+    "announcement": {
+      "type": "announcement-bar",
+      "blocks": {
+        "a_1": {
+          "type": "_announcement",
+          "settings": {
+            "text": "New arrivals are in",
+            "link": "shopify://collections/all"
+          }
+        },
+        "a_2": {
+          "type": "_announcement",
+          "settings": {
+            "text": "Find your size with the size guide on every product"
+          }
+        },
+        "a_3": {
+          "type": "_announcement",
+          "settings": {
+            "text": "Questions? Write to us on WhatsApp"
+          }
+        }
+      },
+      "block_order": [
+        "a_1",
+        "a_2",
+        "a_3"
+      ],
+      "settings": {
+        "color_scheme": "scheme-1",
+        "show_country": false,
+        "show_language": false,
+        "mode": "scroll",
+        "speed": 40,
+        "direction": "forward",
+        "rotate_seconds": 4,
+        "text_size": "small",
+        "label_font": false,
+        "rule_below": true
+      }
+    },
+    "header": {
+      "type": "margin-rail",
+      "settings": {
+        "color_scheme": "scheme-1",
+        "panel_scheme": "scheme-1",
+        "layout": "rail",
+        "logo_width": 120,
+        "logo_width_mobile": 95,
+        "tagline": "Everyday clothes",
+        "menu": "main-menu",
+        "menu_style": "mega",
+        "sticky": "scroll_up",
+        "show_border": true,
+        "show_search": true,
+        "show_account": true,
+        "show_saved": false,
+        "show_language": true,
+        "show_country": false,
+        "drawer_show_whatsapp": true,
+        "drawer_show_localization": true,
+        "drawer_show_social": true
+      }
+    }
+  },
+  "order": [
+    "announcement",
+    "header"
+  ]
+}

@@ -1,0 +1,56 @@
+{% doc %}
+  One review card in Scattered reviews: a photo with the quote, stars and name over it.
+{% enddoc %}
+
+{%- liquid
+  assign review_index = 0
+  for b in section.blocks
+    if b.id == block.id
+      assign review_index = forloop.index0
+      break
+    endif
+  endfor
+  assign review_image = block.settings.image | default: block.settings.product.featured_media
+  if review_image == blank and section.settings.auto_photos
+    assign review_image = collections.all.products[review_index].featured_media
+  endif
+  assign tilt = 'r1,r2,r3,r4,r5,r6' | split: ','
+  assign tilt_pick = review_index | modulo: 6
+  assign review_number = review_index | plus: 1
+-%}
+
+<li class="scatter-card scatter-card--{{ tilt[tilt_pick] }}" data-scatter-card {{ block.shopify_attributes }}>
+  <div class="scatter-card__media" aria-hidden="true">
+    {%- if review_image != blank -%}
+      {{ review_image | image_url: width: 900 | image_tag: loading: 'lazy', widths: '400, 600, 900', sizes: '(min-width: 990px) 30vw, 80vw', alt: '' }}
+    {%- else -%}
+      {% render 'media-placeholder', kind: 'lifestyle', index: review_number %}
+    {%- endif -%}
+  </div>
+  <figure class="scatter-card__body">
+    {%- if block.settings.show_stars -%}
+      {% render 'stars', rating: block.settings.rating %}
+    {%- endif -%}
+    <blockquote class="scatter-card__quote">{{ block.settings.quote }}</blockquote>
+    <figcaption class="scatter-card__name">
+      {{- block.settings.author | escape -}}
+      {%- if block.settings.product != blank -%}
+        <a href="{{ block.settings.product.url }}">{{ block.settings.product.title | escape }}</a>
+      {%- endif -%}
+    </figcaption>
+  </figure>
+</li>
+
+{% schema %}
+{
+  "name": "Review",
+  "settings": [
+    { "type": "text", "id": "author", "label": "Customer name", "default": "Customer name" },
+    { "type": "checkbox", "id": "show_stars", "label": "Show stars", "default": true },
+    { "type": "range", "id": "rating", "label": "Rating", "min": 1, "max": 5, "step": 1, "default": 5 },
+    { "type": "richtext", "id": "quote", "label": "Review", "default": "<p>Paste a real customer review here.</p>" },
+    { "type": "image_picker", "id": "image", "label": "Photo", "info": "A photo of the piece in the customer's home works best" },
+    { "type": "product", "id": "product", "label": "Product reviewed", "info": "Links to it, and uses its photo when there is no photo" }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,226 @@
+{% doc %}
+  Shows the order as a three step timeline: ordered today, ships on a date, delivered between two dates.
+  Dates are worked out in the shopper's browser from business days and the order cutoff hour,
+  and written in the page language.
+
+  @example
+  {% content_for 'block', type: 'delivery-timeline', id: 'delivery-timeline' %}
+{% enddoc %}
+
+{%- liquid
+  assign skip_days = ''
+  if block.settings.skip_friday
+    assign skip_days = skip_days | append: '5,'
+  endif
+  if block.settings.skip_saturday
+    assign skip_days = skip_days | append: '6,'
+  endif
+  if block.settings.skip_sunday
+    assign skip_days = skip_days | append: '0,'
+  endif
+  assign ship_days = block.settings.ship_days
+  assign min_days = block.settings.min_days
+  assign max_days = block.settings.max_days | at_least: min_days
+-%}
+
+<delivery-timeline
+  class="delivery-timeline"
+  data-ship="{{ ship_days }}"
+  data-min="{{ min_days }}"
+  data-max="{{ max_days }}"
+  data-cutoff="{{ block.settings.cutoff_hour }}"
+  data-skip="{{ skip_days }}"
+  {{ block.shopify_attributes }}
+>
+  {%- if block.settings.heading != blank -%}
+    <p class="delivery-timeline__heading">{{ block.settings.heading | escape }}</p>
+  {%- endif -%}
+  <ol class="delivery-timeline__steps" role="list">
+    <li class="delivery-timeline__step">
+      <span class="delivery-timeline__icon" aria-hidden="true">{% render 'icon', icon: 'cart' %}</span>
+      <span class="delivery-timeline__label">{{ 'products.delivery_timeline.ordered' | t }}</span>
+      <span class="delivery-timeline__date" data-timeline-ordered>{{ 'products.delivery_timeline.today' | t }}</span>
+    </li>
+    <li class="delivery-timeline__step">
+      <span class="delivery-timeline__icon" aria-hidden="true">{% render 'icon', icon: 'box' %}</span>
+      <span class="delivery-timeline__label">{{ 'products.delivery_timeline.ships' | t }}</span>
+      <span class="delivery-timeline__date" data-timeline-ships></span>
+    </li>
+    <li class="delivery-timeline__step">
+      <span class="delivery-timeline__icon" aria-hidden="true">{% render 'icon', icon: 'home' %}</span>
+      <span class="delivery-timeline__label">{{ 'products.delivery_timeline.delivered' | t }}</span>
+      <span class="delivery-timeline__date" data-timeline-delivered></span>
+    </li>
+  </ol>
+  {%- if block.settings.show_countdown -%}
+    <p class="delivery-timeline__cutoff" data-timeline-cutoff data-template="{{ 'products.delivery_timeline.order_within' | t: time: '[time]' | escape }}" hidden></p>
+  {%- endif -%}
+  {%- if block.settings.note != blank -%}
+    <div class="delivery-timeline__note rte">{{ block.settings.note }}</div>
+  {%- endif -%}
+</delivery-timeline>
+
+{% javascript %}
+  class DeliveryTimeline extends HTMLElement {
+    connectedCallback() {
+      const skip = (this.dataset.skip || '')
+        .split(',')
+        .filter((value) => value !== '')
+        .map(Number);
+      if (skip.length >= 7) return;
+      const ship = Number(this.dataset.ship) || 0;
+      const min = Number(this.dataset.min) || 0;
+      const max = Math.max(min, Number(this.dataset.max) || min);
+      const cutoff = Number(this.dataset.cutoff);
+      const now = new Date();
+      const late = !Number.isNaN(cutoff) && now.getHours() >= cutoff;
+      const start = new Date(now);
+      if (late) start.setDate(start.getDate() + 1);
+      const addBusinessDays = (date, days) => {
+        const result = new Date(date);
+        while (skip.includes(result.getDay())) result.setDate(result.getDate() + 1);
+        let added = 0;
+        while (added < days) {
+          result.setDate(result.getDate() + 1);
+          if (!skip.includes(result.getDay())) added += 1;
+        }
+        return result;
+      };
+      const lang = document.documentElement.lang || undefined;
+      const format = new Intl.DateTimeFormat(lang, { weekday: 'short', day: 'numeric', month: 'short' });
+      const shipDate = addBusinessDays(start, ship);
+      const from = addBusinessDays(shipDate, min);
+      const to = addBusinessDays(shipDate, max);
+      const set = (selector, text) => {
+        const el = this.querySelector(selector);
+        if (el) el.textContent = text;
+      };
+      set('[data-timeline-ships]', format.format(shipDate));
+      set('[data-timeline-delivered]', min === max ? format.format(from) : `${format.format(from)} – ${format.format(to)}`);
+
+      const countdown = this.querySelector('[data-timeline-cutoff]');
+      if (countdown && !late && !skip.includes(now.getDay()) && !Number.isNaN(cutoff)) {
+        const tick = () => {
+          const end = new Date();
+          end.setHours(cutoff, 0, 0, 0);
+          const left = end - new Date();
+          if (left <= 0) {
+            countdown.hidden = true;
+            clearInterval(this.timer);
+            return;
+          }
+          const hours = Math.floor(left / 3600000);
+          const minutes = Math.floor((left % 3600000) / 60000);
+          const numbers = new Intl.NumberFormat(lang);
+          const time = hours > 0 ? `${numbers.format(hours)}h ${numbers.format(minutes)}m` : `${numbers.format(minutes)}m`;
+          countdown.textContent = (countdown.dataset.template || '[time]').replace('[time]', time);
+          countdown.hidden = false;
+        };
+        tick();
+        this.timer = setInterval(tick, 30000);
+      }
+    }
+
+    disconnectedCallback() {
+      clearInterval(this.timer);
+    }
+  }
+  if (!customElements.get('delivery-timeline')) customElements.define('delivery-timeline', DeliveryTimeline);
+{% endjavascript %}
+
+{% stylesheet %}
+  delivery-timeline {
+    display: block;
+  }
+  .delivery-timeline {
+    display: grid;
+    gap: 12px;
+    padding: 16px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+  }
+  .delivery-timeline__heading {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: var(--label-ls);
+    text-transform: var(--label-case);
+  }
+  .delivery-timeline__steps {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .delivery-timeline__step {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: 4px;
+    text-align: center;
+  }
+  .delivery-timeline__step + .delivery-timeline__step::before {
+    content: '';
+    position: absolute;
+    top: 18px;
+    inset-inline-end: calc(50% + 24px);
+    width: calc(100% - 48px);
+    height: 1px;
+    background: var(--color-border);
+  }
+  .delivery-timeline__icon {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--color-text);
+    color: var(--color-bg);
+  }
+  .delivery-timeline__icon .icon {
+    width: 18px;
+    height: 18px;
+  }
+  .delivery-timeline__label {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+  .delivery-timeline__date {
+    min-height: 1.4em;
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+  .delivery-timeline__cutoff {
+    font-size: 0.8125rem;
+    text-align: center;
+    color: var(--color-accent);
+  }
+  .delivery-timeline__note {
+    font-size: 0.75rem;
+    color: var(--color-muted);
+    text-align: center;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Delivery timeline",
+  "settings": [
+    { "type": "paragraph", "content": "Set these to your real times. Dates are counted in business days from today, or from tomorrow after the cutoff hour." },
+    { "type": "text", "id": "heading", "label": "Heading" },
+    { "type": "range", "id": "ship_days", "label": "Days to prepare the order", "min": 0, "max": 14, "step": 1, "unit": "d", "default": 1 },
+    { "type": "range", "id": "min_days", "label": "Fastest delivery after shipping", "min": 0, "max": 14, "step": 1, "unit": "d", "default": 1 },
+    { "type": "range", "id": "max_days", "label": "Slowest delivery after shipping", "min": 1, "max": 21, "step": 1, "unit": "d", "default": 3 },
+    { "type": "range", "id": "cutoff_hour", "label": "Order cutoff hour", "min": 0, "max": 23, "step": 1, "default": 14, "info": "24 hour clock" },
+    { "type": "checkbox", "id": "show_countdown", "label": "Show time left to order before the cutoff", "default": true },
+    { "type": "checkbox", "id": "skip_friday", "label": "No deliveries on Friday", "default": true },
+    { "type": "checkbox", "id": "skip_saturday", "label": "No deliveries on Saturday", "default": false },
+    { "type": "checkbox", "id": "skip_sunday", "label": "No deliveries on Sunday", "default": false },
+    { "type": "richtext", "id": "note", "label": "Note under the timeline" }
+  ],
+  "presets": [{ "name": "Delivery timeline", "category": "Product" }]
+}
+{% endschema %}

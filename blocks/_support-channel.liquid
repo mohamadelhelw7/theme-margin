@@ -1,0 +1,132 @@
+{% doc %}
+  One way to reach the store inside the Customer support section: WhatsApp, phone, email or a link.
+{% enddoc %}
+
+{%- liquid
+  assign channel = block.settings.channel
+  assign value = block.settings.value | strip
+  assign href = ''
+  case channel
+    when 'whatsapp'
+      assign digits = value | default: settings.whatsapp_number | remove: '+' | remove: ' ' | remove: '-' | remove: '(' | remove: ')'
+      if digits != blank
+        assign href = 'https://wa.me/' | append: digits
+      endif
+    when 'phone'
+      if value != blank
+        assign href = 'tel:' | append: value | remove: ' '
+      endif
+    when 'email'
+      assign address = value | default: shop.email
+      if address != blank
+        assign href = 'mailto:' | append: address
+      endif
+    else
+      assign href = block.settings.link
+  endcase
+  assign icon_name = block.settings.icon
+  if icon_name == 'auto'
+    case channel
+      when 'whatsapp'
+        assign icon_name = 'whatsapp'
+      when 'phone'
+        assign icon_name = 'phone'
+      when 'email'
+        assign icon_name = 'document'
+      else
+        assign icon_name = 'arrow-up-right'
+    endcase
+  endif
+  assign opens_new_tab = false
+  if channel == 'whatsapp'
+    assign opens_new_tab = true
+  elsif channel == 'link' and block.settings.new_tab
+    assign opens_new_tab = true
+  endif
+  assign label = block.settings.link_label
+  if label == blank and channel != 'link'
+    assign label = value
+  endif
+-%}
+
+<li class="support__item" {{ block.shopify_attributes }}>
+  {%- if href != blank -%}
+    <a
+      class="support__card"
+      href="{{ href }}"
+      {%- if opens_new_tab %} target="_blank" rel="noopener"{% endif %}
+    >
+  {%- else -%}
+    <div class="support__card">
+  {%- endif -%}
+  {%- if icon_name != 'none' -%}
+    <span class="support__icon" aria-hidden="true">{% render 'icon', icon: icon_name %}</span>
+  {%- endif -%}
+  <span class="support__body">
+    {%- if block.settings.title != blank -%}
+      <span class="support__title h5">{{ block.settings.title | escape }}</span>
+    {%- endif -%}
+    {%- if block.settings.text != blank -%}
+      <span class="support__text">{{ block.settings.text | escape }}</span>
+    {%- endif -%}
+    {%- if label != blank and href != blank -%}
+      <span class="support__link">
+        <span class="support__label">{{ label | escape }}</span>
+        {% render 'icon', icon: 'arrow' %}
+      </span>
+    {%- endif -%}
+  </span>
+  {%- if href != blank -%}
+    </a>
+  {%- else -%}
+    </div>
+  {%- endif -%}
+</li>
+
+{% schema %}
+{
+  "name": "Contact option",
+  "settings": [
+    {
+      "type": "select",
+      "id": "channel",
+      "label": "Opens",
+      "options": [
+        { "value": "whatsapp", "label": "WhatsApp chat" },
+        { "value": "phone", "label": "Phone call" },
+        { "value": "email", "label": "Email" },
+        { "value": "link", "label": "A page or link" }
+      ],
+      "default": "whatsapp"
+    },
+    { "type": "text", "id": "value", "label": "Number or email", "info": "WhatsApp: country code and number, digits only, for example 201001234567. Empty uses Theme settings > WhatsApp. Email: empty uses your store email." },
+    { "type": "url", "id": "link", "label": "Link", "info": "For A page or link" },
+    { "type": "checkbox", "id": "new_tab", "label": "Open the link in a new tab", "default": false },
+    {
+      "type": "select",
+      "id": "icon",
+      "label": "Icon",
+      "options": [
+        { "value": "auto", "label": "Match the option" },
+        { "value": "whatsapp", "label": "WhatsApp" },
+        { "value": "phone", "label": "Phone" },
+        { "value": "document", "label": "Message" },
+        { "value": "truck", "label": "Delivery" },
+        { "value": "return", "label": "Returns" },
+        { "value": "ruler", "label": "Sizes" },
+        { "value": "clock", "label": "Hours" },
+        { "value": "globe-pin", "label": "Location" },
+        { "value": "shield", "label": "Secure" },
+        { "value": "gift", "label": "Gift" },
+        { "value": "instagram", "label": "Instagram" },
+        { "value": "none", "label": "None" }
+      ],
+      "default": "auto"
+    },
+    { "type": "text", "id": "title", "label": "Title", "default": "Chat on WhatsApp" },
+    { "type": "text", "id": "text", "label": "Text", "default": "Questions about sizes, orders or delivery" },
+    { "type": "text", "id": "link_label", "label": "Link label", "info": "Empty shows the number or email", "default": "Start a chat" }
+  ],
+  "presets": [{ "name": "Contact option" }]
+}
+{% endschema %}

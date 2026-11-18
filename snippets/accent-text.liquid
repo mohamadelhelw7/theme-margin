@@ -1,0 +1,26 @@
+{% doc %}
+  Prints merchant text with words wrapped in *asterisks* set as accent words (an em tag) and line
+  breaks kept. Theme settings → Typography → Accent words decides how accent words look.
+
+  @param {string} text - The text to print
+
+  @example
+  {% render 'accent-text', text: section.settings.heading %}
+{% enddoc %}
+
+{%- liquid
+  assign at_parts = text | escape | split: '*'
+  assign at_last = text | slice: -1
+-%}
+{%- for part in at_parts -%}
+  {%- assign at_odd = forloop.index0 | modulo: 2 -%}
+  {%- if at_odd == 1 -%}
+    {%- if forloop.last and at_last != '*' -%}
+      *{{ part | newline_to_br }}
+    {%- else -%}
+      <em>{{ part | newline_to_br }}</em>
+    {%- endif -%}
+  {%- else -%}
+    {{- part | newline_to_br -}}
+  {%- endif -%}
+{%- endfor -%}

@@ -1,0 +1,38 @@
+{%- liquid
+  assign in_cart = ','
+  for item in cart.items
+    assign in_cart = in_cart | append: item.product_id | append: ','
+  endfor
+-%}
+
+<div data-upsell-results>
+  {%- if recommendations.performed? and recommendations.products_count > 0 -%}
+    {%- for style in (1..3) -%}
+      {%- liquid
+        case style
+          when 1
+            assign style_name = 'checkbox'
+          when 2
+            assign style_name = 'cards'
+          else
+            assign style_name = 'list'
+        endcase
+      -%}
+      <div data-style="{{ style_name }}">
+        {%- for rec in recommendations.products -%}
+          {%- assign needle = ',' | append: rec.id | append: ',' -%}
+          {%- if in_cart contains needle -%}{%- continue -%}{%- endif -%}
+          {% render 'upsell-option', product: rec, style: style_name %}
+        {%- endfor -%}
+      </div>
+    {%- endfor -%}
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "Upsell results",
+  "tag": "div",
+  "settings": []
+}
+{% endschema %}

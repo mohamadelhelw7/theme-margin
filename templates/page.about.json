@@ -1,0 +1,133 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-page",
+      "settings": {}
+    },
+    "statement": {
+      "type": "scroll-text",
+      "settings": {
+        "color_scheme": "scheme-1",
+        "eyebrow": "Our story",
+        "text": "Everyday clothes, made with *care* in small runs.",
+        "size": "large",
+        "alignment": "center",
+        "length": "medium"
+      }
+    },
+    "story": {
+      "type": "story-rows",
+      "blocks": {
+        "row_1": {
+          "type": "_story-row",
+          "settings": {
+            "heading": "Every drop is a set",
+            "text": "<p>Tell your story here: how a drop comes together, from the first sketch to the finished piece.</p>"
+          }
+        },
+        "row_2": {
+          "type": "_story-row",
+          "settings": {
+            "heading": "Numbered like cards",
+            "text": "<p>Explain what the card numbers and rarity mean in your store, and how many pieces each drop has.</p>"
+          }
+        },
+        "row_3": {
+          "type": "_story-row",
+          "settings": {
+            "heading": "Made for the collectors",
+            "text": "<p>Share who you make for, and how customers can show off their pulls.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "row_1",
+        "row_2",
+        "row_3"
+      ],
+      "settings": {
+        "color_scheme": "scheme-2",
+        "first_image": "start",
+        "product_photos": true,
+        "padding_top": "large",
+        "padding_bottom": "large"
+      }
+    },
+    "letters": {
+      "type": "letters",
+      "blocks": {
+        "letter_1": {
+          "type": "_letter"
+        },
+        "letter_2": {
+          "type": "_letter"
+        },
+        "letter_3": {
+          "type": "_letter"
+        }
+      },
+      "block_order": [
+        "letter_1",
+        "letter_2",
+        "letter_3"
+      ],
+      "settings": {
+        "color_scheme": "scheme-1",
+        "eyebrow": "Letters",
+        "heading": "From our *customers*",
+        "columns": 3,
+        "padding_top": "large",
+        "padding_bottom": "large"
+      }
+    },
+    "support": {
+      "type": "customer-support",
+      "blocks": {
+        "whatsapp": {
+          "type": "_support-channel",
+          "settings": {
+            "channel": "whatsapp"
+          }
+        },
+        "email": {
+          "type": "_support-channel",
+          "settings": {
+            "channel": "email",
+            "title": "Email us",
+            "text": "Send us your question or your order number",
+            "link_label": "Send an email"
+          }
+        },
+        "help": {
+          "type": "_support-channel",
+          "settings": {
+            "channel": "link",
+            "icon": "truck",
+            "title": "Delivery and returns",
+            "text": "Add a link to your shipping or returns page",
+            "link_label": "Read more"
+          }
+        }
+      },
+      "block_order": [
+        "whatsapp",
+        "email",
+        "help"
+      ],
+      "settings": {
+        "color_scheme": "scheme-1",
+        "layout": "list",
+        "card_style": "plain",
+        "eyebrow": "Customer care",
+        "heading": "Questions? *Write to us*"
+      }
+    }
+  },
+  "order": [
+    "main",
+    "statement",
+    "story",
+    "letters",
+    "support"
+  ]
+}

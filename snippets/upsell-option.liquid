@@ -1,0 +1,74 @@
+{% doc %}
+  Renders one suggested product for the product page Upsell block, in one of three styles:
+  checkbox (added together with the main product), cards (its own add button) or list (a compact row).
+
+  @param {product} product - The product to suggest
+  @param {string} style - checkbox, cards or list
+
+  @example
+  {% render 'upsell-option', product: product, style: 'checkbox' %}
+{% enddoc %}
+
+{%- assign upsell_variant = product.selected_or_first_available_variant -%}
+{%- if product.available -%}
+  {%- case style -%}
+    {%- when 'checkbox' -%}
+      <div class="upsell-option upsell-option--checkbox" data-upsell-item>
+        <label class="upsell-option__check">
+          <input type="checkbox" value="{{ upsell_variant.id }}" data-upsell-addon>
+          <span class="upsell-option__box" aria-hidden="true">{% render 'icon', icon: 'check' %}</span>
+          <span class="upsell-option__media" aria-hidden="true">
+            {%- if product.featured_media -%}
+              {{ product.featured_media | image_url: width: 160, height: 160, crop: 'center' | image_tag: loading: 'lazy', alt: '' }}
+            {%- endif -%}
+          </span>
+          <span class="upsell-option__info">
+            <span class="upsell-option__title">{{ product.title | escape }}</span>
+            {% render 'price', product: product %}
+          </span>
+        </label>
+        {%- unless product.has_only_default_variant -%}
+          <label class="visually-hidden" for="UpsellVariant-{{ product.id }}">{{ 'products.product.choose_options' | t }}</label>
+          <select id="UpsellVariant-{{ product.id }}" class="select upsell-option__select" data-upsell-variant>
+            {%- for v in product.variants -%}
+              <option value="{{ v.id }}" {% if v.id == upsell_variant.id %}selected{% endif %} {% unless v.available %}disabled{% endunless %}>
+                {{- v.title | escape -}}
+              </option>
+            {%- endfor -%}
+          </select>
+        {%- endunless -%}
+      </div>
+    {%- when 'cards' -%}
+      <div class="upsell-option upsell-option--card" data-upsell-item>
+        <a href="{{ product.url }}" class="upsell-option__card-media" tabindex="-1" aria-hidden="true">
+          {%- if product.featured_media -%}
+            {{ product.featured_media | image_url: width: 400 | image_tag: loading: 'lazy', widths: '200, 300, 400', sizes: '160px', alt: '' }}
+          {%- endif -%}
+        </a>
+        <a href="{{ product.url }}" class="upsell-option__title">{{ product.title | escape }}</a>
+        {% render 'price', product: product %}
+        {%- form 'product', product, data-product-form: '', novalidate: 'novalidate', class: 'upsell-option__form' -%}
+          {%- if product.has_only_default_variant -%}
+            <input type="hidden" name="id" value="{{ upsell_variant.id }}">
+          {%- else -%}
+            <label class="visually-hidden" for="UpsellCard-{{ product.id }}">{{ 'products.product.choose_options' | t }}</label>
+            <select id="UpsellCard-{{ product.id }}" name="id" class="select upsell-option__select">
+              {%- for v in product.variants -%}
+                <option value="{{ v.id }}" {% if v.id == upsell_variant.id %}selected{% endif %} {% unless v.available %}disabled{% endunless %}>
+                  {{- v.title | escape -}}
+                </option>
+              {%- endfor -%}
+            </select>
+          {%- endif -%}
+          <input type="hidden" name="quantity" value="1">
+          <button type="submit" class="button button--secondary button--small button--full">
+            {{- 'cart.upsell_add' | t -}}
+            <span class="visually-hidden">{{ product.title | escape }}</span>
+          </button>
+          <p class="form-message form-message--error" data-form-error role="alert" hidden></p>
+        {%- endform -%}
+      </div>
+    {%- else -%}
+      {% render 'upsell-item', product: product %}
+  {%- endcase -%}
+{%- endif -%}

@@ -1,0 +1,105 @@
+{% doc %}
+  Renders a hero's media: a looping video, one image, or two images side by side. On phones an
+  optional phone image replaces the images, and two images stack. It fills its parent, so the
+  hero decides the size and position.
+
+  @param {object} [video] - Video from a video setting. Plays muted on a loop instead of the images.
+  @param {image} [image] - First image
+  @param {image} [image_2] - Second image, shown beside the first
+  @param {image} [image_mobile] - Image for phones. With two images it replaces both on phones.
+  @param {string} [alt] - Alt text when the image has none
+  @param {string} [sizes] - Sizes for one image (default 100vw)
+  @param {string} [class] - Extra classes on the wrapper
+
+  @example
+  {% render 'hero-media', video: section.settings.video, image: section.settings.image, image_2: section.settings.image_2 %}
+{% enddoc %}
+
+{%- liquid
+  assign hm_two = false
+  if video == blank and image != blank and image_2 != blank
+    assign hm_two = true
+  endif
+  assign hm_sizes = sizes | default: '100vw'
+  if hm_two
+    assign hm_sizes = '(min-width: 750px) 50vw, 100vw'
+  endif
+  assign hm_alt_1 = image.alt | default: alt | escape
+  assign hm_alt_2 = image_2.alt | default: alt | escape
+  assign hm_focal_1 = ''
+  if image != blank
+    assign hm_focal_1 = 'object-position: ' | append: image.presentation.focal_point | append: ';'
+  endif
+  assign hm_focal_2 = ''
+  if image_2 != blank
+    assign hm_focal_2 = 'object-position: ' | append: image_2.presentation.focal_point | append: ';'
+  endif
+  assign hm_class = 'hero-media'
+  if hm_two
+    assign hm_class = hm_class | append: ' hero-media--two'
+  endif
+  if image_mobile != blank and video == blank
+    assign hm_class = hm_class | append: ' hero-media--has-mobile'
+  endif
+  if class != blank
+    assign hm_class = hm_class | append: ' ' | append: class
+  endif
+-%}
+
+<div class="{{ hm_class }}">
+  {%- if video != blank -%}
+    {{
+      video
+      | video_tag:
+        autoplay: true,
+        loop: true,
+        muted: true,
+        playsinline: true,
+        controls: false,
+        preload: 'metadata',
+        image_size: '1600x',
+        class: 'hero-media__video'
+    }}
+  {%- else -%}
+    {%- if image != blank -%}
+      <div class="hero-media__item">
+        <picture>
+          {%- if image_mobile != blank -%}
+            <source
+              media="(max-width: 749px)"
+              srcset="{{ image_mobile | image_url: width: 450 }} 450w, {{ image_mobile | image_url: width: 750 }} 750w, {{ image_mobile | image_url: width: 1100 }} 1100w, {{ image_mobile | image_url: width: 1500 }} 1500w"
+              sizes="100vw"
+            >
+          {%- endif -%}
+          {{
+            image
+            | image_url: width: 3000
+            | image_tag:
+              widths: '750, 1100, 1500, 1920, 2400, 3000',
+              sizes: hm_sizes,
+              loading: 'eager',
+              fetchpriority: 'high',
+              alt: hm_alt_1,
+              style: hm_focal_1,
+              class: 'hero-media__img'
+          }}
+        </picture>
+      </div>
+    {%- endif -%}
+    {%- if hm_two -%}
+      <div class="hero-media__item hero-media__second">
+        {{
+          image_2
+          | image_url: width: 2000
+          | image_tag:
+            widths: '750, 1100, 1500, 2000',
+            sizes: hm_sizes,
+            loading: 'lazy',
+            alt: hm_alt_2,
+            style: hm_focal_2,
+            class: 'hero-media__img'
+        }}
+      </div>
+    {%- endif -%}
+  {%- endif -%}
+</div>

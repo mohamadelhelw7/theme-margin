@@ -1,0 +1,64 @@
+{% doc %}
+  One chapter in the Chapters section: a collection whose title stays pinned while its plates
+  scroll past.
+{% enddoc %}
+
+{%- liquid
+  assign chapter_index = 0
+  for b in section.blocks
+    if b.id == block.id
+      assign chapter_index = forloop.index
+      break
+    endif
+  endfor
+  assign chapter_collection = block.settings.collection
+  assign chapter_title = block.settings.title | default: chapter_collection.title
+  if chapter_title == blank
+    assign chapter_title = 'sections.chapters.placeholder' | t
+  endif
+  assign chapter_url = chapter_collection.url | default: routes.all_products_collection_url
+  assign limit = block.settings.products
+-%}
+
+<article class="chapter" {{ block.shopify_attributes }}>
+  <div class="chapter__head">
+    <p class="chapter__no caption">{{ section.settings.chapter_word | escape }} {{ chapter_index }}</p>
+    <h2 class="chapter__title h2">{% render 'accent-text', text: chapter_title %}</h2>
+    {%- if block.settings.text != blank -%}
+      <div class="chapter__text rte">{{ block.settings.text }}</div>
+    {%- elsif chapter_collection.description != blank and section.settings.use_description -%}
+      <div class="chapter__text rte"><p>{{ chapter_collection.description | strip_html | truncatewords: 28 }}</p></div>
+    {%- endif -%}
+    <a class="chapter__link" href="{{ chapter_url }}">
+      {%- if chapter_collection.products_count > 0 -%}
+        {{ 'sections.chapters.view_count' | t: count: chapter_collection.products_count }}
+      {%- else -%}
+        {{ 'sections.chapters.view' | t }}
+      {%- endif -%}
+    </a>
+  </div>
+  <ul class="chapter__plates" role="list">
+    {%- if chapter_collection != blank and chapter_collection.products_count > 0 -%}
+      {%- for product in chapter_collection.products limit: limit -%}
+        <li>{% render 'product-card', product: product, index: forloop.index %}</li>
+      {%- endfor -%}
+    {%- else -%}
+      {%- for i in (1..limit) -%}
+        <li>{% render 'product-card', index: i %}</li>
+      {%- endfor -%}
+    {%- endif -%}
+  </ul>
+</article>
+
+{% schema %}
+{
+  "name": "Chapter",
+  "settings": [
+    { "type": "collection", "id": "collection", "label": "Collection" },
+    { "type": "text", "id": "title", "label": "Title", "info": "Defaults to the collection title. Wrap words in *asterisks* to set them in italics." },
+    { "type": "richtext", "id": "text", "label": "Text", "info": "Defaults to the start of the collection description when that is on in the section" },
+    { "type": "range", "id": "products", "label": "Plates", "min": 2, "max": 8, "step": 2, "default": 4 }
+  ],
+  "presets": [{ "name": "Chapter" }]
+}
+{% endschema %}

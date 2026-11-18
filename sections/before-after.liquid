@@ -1,0 +1,292 @@
+{%- liquid
+  assign before = section.settings.before_image
+  assign after = section.settings.after_image
+  assign start = section.settings.start
+-%}
+
+<section
+  class="section before-after color-{{ section.settings.color_scheme }}"
+  style="--pt: var(--space-{{ section.settings.padding_top }}); --pb: var(--space-{{ section.settings.padding_bottom }});"
+>
+  <div class="page-width before-after__inner before-after__inner--{{ section.settings.layout }}">
+    {%- if section.settings.heading != blank or section.settings.text != blank -%}
+      <div class="before-after__copy">
+        {%- if section.settings.eyebrow != blank -%}
+          <span class="eyebrow">{{ section.settings.eyebrow | escape }}</span>
+        {%- endif -%}
+        {%- if section.settings.heading != blank -%}
+          <h2 class="h2">{{ section.settings.heading | escape }}</h2>
+        {%- endif -%}
+        {%- if section.settings.text != blank -%}
+          <div class="before-after__text rte">{{ section.settings.text }}</div>
+        {%- endif -%}
+        {%- if section.settings.button_label != blank -%}
+          <a class="arrow-link" href="{{ section.settings.button_link | default: routes.all_products_collection_url }}">
+            {{- section.settings.button_label | escape -}}
+            {% render 'icon', icon: 'arrow' %}
+          </a>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    <before-after class="before-after__compare" style="--pos: {{ start }}%; --ratio: {{ section.settings.ratio }};" dir="ltr">
+      <div class="before-after__layer before-after__layer--after">
+        {%- if after != blank -%}
+          {%- assign after_alt = after.alt | default: section.settings.after_label | escape -%}
+          {{ after | image_url: width: 2000 | image_tag: loading: 'lazy', widths: '600, 900, 1200, 1600, 2000', sizes: '(min-width: 990px) 60vw, 100vw', alt: after_alt }}
+        {%- else -%}
+          <span class="before-after__room color-{{ section.settings.wall_scheme }}">
+            <span class="before-after__piece">{% render 'placeholder-art', name: 'hoodie', tone: 1 %}</span>
+          </span>
+        {%- endif -%}
+        {%- if section.settings.after_label != blank -%}
+          <span class="before-after__tag before-after__tag--after">{{ section.settings.after_label | escape }}</span>
+        {%- endif -%}
+      </div>
+      <div class="before-after__layer before-after__layer--before" aria-hidden="true">
+        {%- if before != blank -%}
+          {{ before | image_url: width: 2000 | image_tag: loading: 'lazy', widths: '600, 900, 1200, 1600, 2000', sizes: '(min-width: 990px) 60vw, 100vw', alt: '' }}
+        {%- else -%}
+          <span class="before-after__room color-{{ section.settings.wall_scheme }}">
+            <span class="before-after__piece">{% render 'placeholder-art', name: 'hoodie', tone: 3, back: true %}</span>
+          </span>
+        {%- endif -%}
+        {%- if section.settings.before_label != blank -%}
+          <span class="before-after__tag before-after__tag--before">{{ section.settings.before_label | escape }}</span>
+        {%- endif -%}
+      </div>
+      <span class="before-after__handle" aria-hidden="true">
+        <span class="before-after__knob">{% render 'icon', icon: 'chevron-left' %}{% render 'icon', icon: 'chevron-right' %}</span>
+      </span>
+      <input
+        class="before-after__range"
+        type="range"
+        min="0"
+        max="100"
+        step="1"
+        value="{{ start }}"
+        aria-label="{{ 'sections.before_after.label' | t }}"
+        data-before-after-range
+      >
+    </before-after>
+  </div>
+</section>
+
+{% javascript %}
+  class BeforeAfter extends HTMLElement {
+    connectedCallback() {
+      const range = this.querySelector('[data-before-after-range]');
+      if (!range) return;
+      const update = () => this.style.setProperty('--pos', `${range.value}%`);
+      range.addEventListener('input', update);
+      this.addEventListener('pointerdown', (event) => {
+        if (event.target === range) return;
+        const rect = this.getBoundingClientRect();
+        range.value = Math.round(((event.clientX - rect.left) / rect.width) * 100);
+        update();
+      });
+    }
+  }
+  if (!customElements.get('before-after')) customElements.define('before-after', BeforeAfter);
+{% endjavascript %}
+
+{% stylesheet %}
+  .before-after__inner {
+    display: grid;
+    gap: clamp(24px, 4vw, 56px);
+  }
+  .before-after__inner--beside {
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.4fr);
+    align-items: center;
+  }
+  .before-after__inner--stacked .before-after__copy {
+    justify-items: center;
+    max-width: 640px;
+    margin-inline: auto;
+    text-align: center;
+  }
+  .before-after__copy {
+    display: grid;
+    gap: 16px;
+    justify-items: start;
+  }
+  .before-after__text {
+    font-size: 0.9375rem;
+    color: var(--color-body);
+  }
+  before-after {
+    display: block;
+  }
+  .before-after__compare {
+    position: relative;
+    aspect-ratio: var(--ratio, 1.5);
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    touch-action: pan-y;
+    user-select: none;
+  }
+  .before-after__layer {
+    position: absolute;
+    inset: 0;
+  }
+  .before-after__layer > img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .before-after__layer--before {
+    clip-path: inset(0 calc(100% - var(--pos)) 0 0);
+  }
+  .before-after__room {
+    position: absolute;
+    inset: 0;
+    display: block;
+    container-type: size;
+    background:
+      radial-gradient(60% 50% at 50% 18%, rgb(255 255 255 / 0.45), transparent 70%),
+      linear-gradient(to bottom, var(--color-bg) 90%, color-mix(in srgb, var(--color-text) 14%, var(--color-bg)) 90%);
+  }
+  .before-after__piece {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: min(46%, 72cqh);
+    translate: -50% -50%;
+  }
+  .before-after__tag {
+    position: absolute;
+    top: 14px;
+    padding: 6px 10px;
+    background: rgb(0 0 0 / 0.55);
+    color: #ffffff;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .before-after__tag--before {
+    left: 14px;
+  }
+  .before-after__tag--after {
+    right: 14px;
+  }
+  .before-after__handle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: var(--pos);
+    width: 2px;
+    translate: -50% 0;
+    background: #ffffff;
+    box-shadow: 0 0 12px rgb(0 0 0 / 0.3);
+    pointer-events: none;
+  }
+  .before-after__knob {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    translate: -50% -50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: #ffffff;
+    color: #141414;
+    box-shadow: 0 6px 18px -6px rgb(0 0 0 / 0.45);
+  }
+  .before-after__knob .icon {
+    width: 14px;
+    height: 14px;
+  }
+  .before-after__range {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: ew-resize;
+  }
+  .before-after__compare:has(.before-after__range:focus-visible) .before-after__knob {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+  @media (max-width: 749px) {
+    .before-after__inner--beside {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Before and after",
+  "tag": "section",
+  "class": "before-after-section",
+  "settings": [
+    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1" },
+    { "type": "color_scheme", "id": "wall_scheme", "label": "Background without photos", "default": "scheme-4" },
+    { "type": "paragraph", "content": "Shoppers drag the line to compare two photos taken from the same spot." },
+    { "type": "image_picker", "id": "before_image", "label": "Before image" },
+    { "type": "image_picker", "id": "after_image", "label": "After image" },
+    { "type": "text", "id": "before_label", "label": "Before label", "default": "Before" },
+    { "type": "text", "id": "after_label", "label": "After label", "default": "After" },
+    { "type": "range", "id": "start", "label": "Starting position", "min": 10, "max": 90, "step": 5, "unit": "%", "default": 50 },
+    {
+      "type": "select",
+      "id": "ratio",
+      "label": "Shape",
+      "options": [
+        { "value": "1.78", "label": "Wide" },
+        { "value": "1.5", "label": "Landscape" },
+        { "value": "1", "label": "Square" },
+        { "value": "0.8", "label": "Portrait" }
+      ],
+      "default": "1.5"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Layout",
+      "options": [
+        { "value": "beside", "label": "Text beside the photos" },
+        { "value": "stacked", "label": "Text above the photos" }
+      ],
+      "default": "beside"
+    },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Before and after" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "One piece, two ways" },
+    { "type": "richtext", "id": "text", "label": "Text", "default": "<p>Drag the line to compare. Upload two photos of the same piece, for example the blank and the finished print, or two ways to style it.</p>" },
+    { "type": "text", "id": "button_label", "label": "Button label", "default": "Shop the piece" },
+    { "type": "url", "id": "button_link", "label": "Button link" },
+    {
+      "type": "select",
+      "id": "padding_top",
+      "label": "Top padding",
+      "options": [
+        { "value": "none", "label": "None" },
+        { "value": "small", "label": "Small" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "large", "label": "Large" }
+      ],
+      "default": "large"
+    },
+    {
+      "type": "select",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "options": [
+        { "value": "none", "label": "None" },
+        { "value": "small", "label": "Small" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "large", "label": "Large" }
+      ],
+      "default": "large"
+    }
+  ],
+  "presets": [{ "name": "Before and after" }]
+}
+{% endschema %}

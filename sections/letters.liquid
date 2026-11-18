@@ -1,0 +1,172 @@
+{%- comment -%}
+  Letters: customer reviews set like short letters in columns, with italic signatures. On phones
+  they swipe.
+{%- endcomment -%}
+
+{%- assign heading_id = 'LettersHeading-' | append: section.id -%}
+
+<section
+  class="section color-{{ section.settings.color_scheme }}"
+  style="--pt: var(--space-{{ section.settings.padding_top }}); --pb: var(--space-{{ section.settings.padding_bottom }}); --letter-cols: {{ section.settings.columns }};"
+  {% if section.settings.heading != blank %}
+    aria-labelledby="{{ heading_id }}"
+  {% endif %}
+>
+  <div class="page-width letters">
+    <div class="letters__head">
+      {%- if section.settings.eyebrow != blank -%}
+        <p class="letters__eyebrow caption">{{ section.settings.eyebrow | escape }}</p>
+      {%- endif -%}
+      {%- if section.settings.heading != blank -%}
+        <h2 id="{{ heading_id }}" class="h2 letters__heading">{% render 'accent-text', text: section.settings.heading %}</h2>
+      {%- endif -%}
+      {%- if section.settings.link_label != blank -%}
+        <a class="letters__more" href="{{ section.settings.link_url | default: '/pages/reviews' }}">{{ section.settings.link_label | escape }}</a>
+      {%- endif -%}
+    </div>
+    <ul class="letters__list" role="list">
+      {% content_for 'blocks' %}
+    </ul>
+  </div>
+</section>
+
+{% stylesheet %}
+  .letters {
+    display: grid;
+    gap: clamp(28px, 4vw, 52px);
+  }
+  .letters__head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 10px 24px;
+  }
+  .letters__eyebrow {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-size: 1rem;
+    color: var(--color-muted);
+  }
+  .letters__heading {
+    margin: 0;
+  }
+  .letters__more {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 5px;
+  }
+  .letters__list {
+    display: grid;
+    grid-template-columns: repeat(var(--letter-cols, 3), minmax(0, 1fr));
+    gap: clamp(28px, 3vw, 48px);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .letter {
+    display: grid;
+    align-content: start;
+    gap: 16px;
+    padding-top: 18px;
+    border-top: 1px solid var(--color-border);
+  }
+  .letter__top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    color: var(--color-muted);
+    font-size: 0.875rem;
+  }
+  .letter__body {
+    margin: 0;
+    font-size: 1.125rem;
+    line-height: 1.55;
+  }
+  .letter__body p {
+    margin: 0;
+  }
+  .letter__sign {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 6px 14px;
+    margin: 0;
+    font-size: 0.9375rem;
+  }
+  .letter__product {
+    color: var(--color-muted);
+    font-size: 0.8125rem;
+    text-decoration: none;
+  }
+  .letter__product:hover {
+    color: var(--color-text);
+    text-decoration: underline;
+  }
+  @media (max-width: 749px) {
+    .letters__list {
+      display: flex;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+      margin-inline: calc(var(--gutter) * -1);
+      padding-inline: var(--gutter);
+    }
+    .letter {
+      flex: 0 0 82%;
+      scroll-snap-align: start;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Letters",
+  "tag": "div",
+  "class": "letters-section",
+  "max_blocks": 12,
+  "blocks": [{ "type": "_letter" }],
+  "disabled_on": { "groups": ["header", "footer"] },
+  "settings": [
+    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1" },
+    { "type": "paragraph", "content": "Paste real reviews from your customers, one per Letter block." },
+    { "type": "text", "id": "eyebrow", "label": "Small title", "default": "Letters" },
+    { "type": "textarea", "id": "heading", "label": "Heading", "info": "Wrap words in *asterisks* to set them in italics", "default": "From our *customers*" },
+    { "type": "range", "id": "columns", "label": "Letters per row on desktop", "min": 2, "max": 4, "step": 1, "default": 3 },
+    { "type": "text", "id": "link_label", "label": "Link label" },
+    { "type": "url", "id": "link_url", "label": "Link" },
+    { "type": "header", "content": "Spacing" },
+    {
+      "type": "select",
+      "id": "padding_top",
+      "label": "Top spacing",
+      "options": [
+        { "value": "none", "label": "None" },
+        { "value": "small", "label": "Small" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "large", "label": "Large" }
+      ],
+      "default": "large"
+    },
+    {
+      "type": "select",
+      "id": "padding_bottom",
+      "label": "Bottom spacing",
+      "options": [
+        { "value": "none", "label": "None" },
+        { "value": "small", "label": "Small" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "large", "label": "Large" }
+      ],
+      "default": "large"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Letters",
+      "blocks": [{ "type": "_letter" }, { "type": "_letter" }, { "type": "_letter" }]
+    }
+  ]
+}
+{% endschema %}

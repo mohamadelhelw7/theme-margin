@@ -1,0 +1,118 @@
+{% doc %}
+  Draws a flat clothing illustration for frames that have no photo yet. The four fills are the
+  drawing colors in Theme settings → Layout → Missing photos (heather grey, sand, ink and olive
+  by default), like a rail of everyday basics.
+
+  @param {string} [name] - tee (default), hoodie, pants, cap, sneaker, tote or jacket
+  @param {number} [tone] - 1 to 4, which drawing color fills the piece
+  @param {boolean} [back] - Shows the back without the chest print
+
+  @example
+  {% render 'placeholder-art', name: 'hoodie', tone: 2 %}
+{% enddoc %}
+
+{%- liquid
+  assign g_name = name | default: 'tee'
+  assign g_tone = tone | default: 1 | plus: 0 | modulo: 4
+  if g_tone == 0
+    assign g_tone = 4
+  endif
+-%}
+
+<svg class="garm garm--t{{ g_tone }}" viewBox="0 0 120 120" aria-hidden="true" focusable="false">
+  <ellipse class="garm__shadow" cx="60" cy="113" rx="40" ry="4.5"/>
+  <g class="garm__ink">
+    {%- case g_name -%}
+      {%- when 'hoodie' -%}
+        <path class="b" d="M40 30 L24 36 L12 92 L26 94 L32 58 L32 106 L88 106 L88 58 L94 94 L108 92 L96 36 L80 30 Z"/>
+        <path class="b" d="M40 30 C38 16 48 8 60 8 C72 8 82 16 80 30 C76 40 68 44 60 44 C52 44 44 40 40 30 Z"/>
+        <path class="s" d="M48 28 C50 20 70 20 72 28 C70 35 66 38 60 38 C54 38 50 35 48 28 Z"/>
+        <path class="l" d="M55 43 L54 56 M65 43 L66 56"/>
+        <path class="b" d="M44 80 H76 L80 96 H40 Z"/>
+        <path class="l" d="M32 99 H88 M14 86 L26 88 M106 86 L94 88"/>
+        {%- unless back -%}<path class="p" d="M60 56 L62.6 63.4 L70 66 L62.6 68.6 L60 76 L57.4 68.6 L50 66 L57.4 63.4 Z"/>{%- endunless -%}
+      {%- when 'pants' -%}
+        <path class="b" d="M34 12 H86 L92 108 H68 L60 46 L52 108 H28 Z"/>
+        <path class="l" d="M33.5 20 H86.5 M60 20 V40 M44 12 V20 M76 12 V20"/>
+        <path class="b" d="M33 60 H46 V78 H32 Z M74 60 H87 L88 78 H74 Z"/>
+        <path class="l" d="M29 100 H51 M69 100 H91"/>
+      {%- when 'cap' -%}
+        <path class="b" d="M20 78 C18 48 38 30 60 30 C82 30 98 48 98 72 C108 72 116 76 116 82 C116 87 100 88 88 85 C66 80 40 78 20 78 Z"/>
+        <path class="l" d="M60 33 C70 44 76 58 78 80 M60 33 C50 44 44 58 42 78"/>
+        <path class="b" d="M57 29 A3 3 0 1 0 63 29 A3 3 0 1 0 57 29 Z"/>
+        <path class="l" d="M98 72 C94 76 90 80 88 85"/>
+        {%- unless back -%}<path class="p" d="M50 52 L53 59 L60 61 L53 63 L50 70 L47 63 L40 61 L47 59 Z"/>{%- endunless -%}
+      {%- when 'sneaker' -%}
+        <path class="b" d="M10 84 C10 74 14 68 22 66 L44 50 C48 46 54 46 56 52 C60 60 70 62 80 62 L100 66 C108 68 112 74 112 82 V88 C112 92 108 94 104 94 H16 C12 94 10 91 10 88 Z"/>
+        <path class="w" d="M10 84 H112 V88 C112 92 108 94 104 94 H16 C12 94 10 91 10 88 Z"/>
+        <path class="l" d="M48 54 L56 60 M42 59 L50 65 M36 64 L44 70"/>
+        <path class="l" d="M24 84 C34 74 52 70 70 74 M96 66 C94 74 98 80 112 82"/>
+      {%- when 'tote' -%}
+        <path class="h" d="M44 44 C44 20 76 20 76 44"/>
+        <path class="b" d="M24 44 H96 L90 108 H30 Z"/>
+        {%- unless back -%}<path class="p" d="M60 64 L63 73 L72 76 L63 79 L60 88 L57 79 L48 76 L57 73 Z"/>{%- endunless -%}
+      {%- when 'jacket' -%}
+        <path class="b" d="M42 18 L24 24 L12 86 L24 90 L32 50 L32 98 H88 L88 50 L96 90 L108 86 L96 24 L78 18 L60 34 Z"/>
+        <path class="s" d="M42 18 L48 28 L60 34 L72 28 L78 18 L60 26 Z"/>
+        <path class="l" d="M60 34 V98 M32 92 H88 M13 80 L25 84 M107 80 L95 84 M40 64 L47 78 M80 64 L73 78"/>
+      {%- else -%}
+        <path class="b" d="M42 18 L28 22 L10 40 L22 54 L32 46 V104 H88 V46 L98 54 L110 40 L92 22 L78 18 C76 26 69 31 60 31 C51 31 44 26 42 18 Z"/>
+        <path class="l" d="M45 19 C48 24 54 26 60 26 C66 26 72 24 75 19"/>
+        <path class="l" d="M32 98 H88 M17 46 L28 36 M103 46 L92 36"/>
+        {%- unless back -%}<path class="p" d="M60 48 C68 48 74 54 74 62 C74 70 68 76 60 76 C52 76 46 70 46 62 C46 54 52 48 60 48 Z"/>{%- endunless -%}
+    {%- endcase -%}
+  </g>
+</svg>
+
+{% stylesheet %}
+  :where(.garm) {
+    --g: var(--garm-1, #b9bcc0);
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+  :where(.garm--t2) {
+    --g: var(--garm-2, #c9bfa8);
+  }
+  :where(.garm--t3) {
+    --g: var(--garm-3, #1f1f1f);
+  }
+  :where(.garm--t4) {
+    --g: var(--garm-4, #6b6e4e);
+  }
+  .garm__shadow {
+    fill: rgb(0 0 0 / 0.14);
+  }
+  .garm__ink {
+    stroke-linejoin: round;
+    stroke-linecap: round;
+  }
+  .garm .b,
+  .garm .s,
+  .garm .w,
+  .garm .l,
+  .garm .h {
+    stroke: color-mix(in srgb, var(--g) 45%, #000000);
+    stroke-width: 2;
+  }
+  .garm .b {
+    fill: color-mix(in srgb, var(--g) 88%, #ffffff);
+  }
+  .garm .s {
+    fill: color-mix(in srgb, var(--g) 68%, #000000);
+  }
+  .garm .w {
+    fill: #ffffff;
+  }
+  .garm .l {
+    fill: none;
+  }
+  .garm .h {
+    fill: none;
+    stroke-width: 5;
+  }
+  .garm .p {
+    fill: color-mix(in srgb, var(--g) 12%, #ffffff);
+  }
+{% endstylesheet %}

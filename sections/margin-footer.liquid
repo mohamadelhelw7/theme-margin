@@ -1,0 +1,210 @@
+{%- comment -%}
+  Margin footer, set like a book's colophon: the store name and a short italic note on one side,
+  the signup, menus and text on the other, then a quiet line with the copyright, policies,
+  language and country, social links and payment icons.
+{%- endcomment -%}
+
+<footer class="mfoot color-{{ section.settings.color_scheme }}" style="--footer-mt: var(--space-{{ section.settings.margin_top }});">
+  <div class="page-width">
+    <div class="mfoot__top">
+      <div class="mfoot__colophon">
+        <p class="mfoot__name">{{ section.settings.wordmark | default: shop.name | escape }}</p>
+        {%- if section.settings.colophon != blank -%}
+          <div class="mfoot__note caption">{{ section.settings.colophon }}</div>
+        {%- endif -%}
+      </div>
+      <div class="mfoot__blocks" style="--footer-cols: {{ section.settings.columns }};">
+        {% content_for 'blocks' %}
+      </div>
+    </div>
+
+    <div class="mfoot__bottom">
+      <p class="mfoot__copyright">
+        &copy; {{ 'now' | date: '%Y' }}
+        {{ shop.name | link_to: routes.root_url }}
+        {%- if section.settings.show_powered_by %} · {{ powered_by_link }}{% endif -%}
+      </p>
+      {%- if section.settings.show_policies and shop.policies.size > 0 -%}
+        <ul class="mfoot__policies" role="list">
+          {%- for policy in shop.policies -%}
+            <li><a href="{{ policy.url }}">{{ policy.title | escape }}</a></li>
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
+      {%- if section.settings.show_localization -%}
+        <div class="mfoot__locale">
+          {% render 'localization-form', id_prefix: 'Footer', show_language: true, show_country: section.settings.show_country %}
+        </div>
+      {%- endif -%}
+      {%- if section.settings.show_social -%}
+        {% render 'social-icons' %}
+      {%- endif -%}
+      {%- if section.settings.show_payment_icons and shop.enabled_payment_types.size > 0 -%}
+        <div class="mfoot__payments">
+          {%- if section.settings.payment_text != blank -%}
+            <span class="caption">{{ section.settings.payment_text | escape }}</span>
+          {%- endif -%}
+          <ul class="mfoot__payment-list" role="list">
+            {%- for type in shop.enabled_payment_types -%}
+              <li>{{ type | payment_type_svg_tag: class: 'mfoot__payment-icon' }}</li>
+            {%- endfor -%}
+          </ul>
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</footer>
+
+{% stylesheet %}
+  .mfoot {
+    margin-top: var(--footer-mt);
+    padding-top: clamp(48px, 6vw, 96px);
+    border-top: 1px solid var(--color-border);
+  }
+  .mfoot a {
+    color: inherit;
+  }
+  .mfoot__top {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+    gap: clamp(32px, 5vw, 96px);
+    padding-bottom: clamp(40px, 5vw, 72px);
+  }
+  .mfoot__colophon {
+    display: grid;
+    gap: 14px;
+    align-content: start;
+  }
+  .mfoot__name {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-weight: var(--font-heading-weight);
+    font-size: calc(clamp(1.8rem, 3vw, 2.6rem) * var(--heading-scale));
+    letter-spacing: var(--heading-ls);
+    line-height: 1;
+  }
+  .mfoot__note {
+    max-width: 34ch;
+    font-size: 1rem;
+    color: var(--color-muted);
+  }
+  .mfoot__note p {
+    margin: 0;
+  }
+  .mfoot__blocks {
+    display: grid;
+    grid-template-columns: repeat(var(--footer-cols, 3), minmax(0, 1fr));
+    gap: 32px;
+  }
+  .mfoot__bottom {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px 28px;
+    padding-block: 20px 26px;
+    border-top: 1px solid var(--color-border);
+    font-size: 0.8125rem;
+    color: var(--color-muted);
+  }
+  .mfoot__copyright {
+    margin: 0;
+  }
+  .mfoot__copyright a,
+  .mfoot__policies a {
+    text-decoration: none;
+  }
+  .mfoot__copyright a:hover,
+  .mfoot__policies a:hover {
+    color: var(--color-text);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .mfoot__policies,
+  .mfoot__payment-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .mfoot__payment-list {
+    gap: 6px;
+  }
+  .mfoot__payments {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+  }
+  .mfoot__payment-icon {
+    display: block;
+    width: 38px;
+    height: 24px;
+  }
+  @media (max-width: 989px) {
+    .mfoot__top {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .mfoot__blocks {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 749px) {
+    .mfoot__blocks {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .mfoot__bottom {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Margin footer",
+  "tag": "div",
+  "class": "footer-section",
+  "enabled_on": { "groups": ["footer"] },
+  "blocks": [{ "type": "_footer-brand" }, { "type": "_footer-newsletter" }, { "type": "_footer-menu" }, { "type": "_footer-text" }, { "type": "@app" }],
+  "settings": [
+    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1" },
+    {
+      "type": "select",
+      "id": "margin_top",
+      "label": "Space above footer",
+      "options": [
+        { "value": "none", "label": "None" },
+        { "value": "small", "label": "Small" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "large", "label": "Large" }
+      ],
+      "default": "none"
+    },
+    { "type": "header", "content": "Colophon" },
+    { "type": "text", "id": "wordmark", "label": "Name", "info": "Defaults to your store name" },
+    { "type": "richtext", "id": "colophon", "label": "Note", "default": "<p>Everyday clothes, made in small runs. Write a line about your studio here.</p>" },
+    { "type": "range", "id": "columns", "label": "Block columns on desktop", "min": 2, "max": 4, "step": 1, "default": 3 },
+    { "type": "header", "content": "Bottom line" },
+    { "type": "checkbox", "id": "show_policies", "label": "Show policy links", "default": true },
+    { "type": "checkbox", "id": "show_localization", "label": "Show language selector", "info": "Appears when your store has more than one language", "default": true },
+    { "type": "checkbox", "id": "show_country", "label": "Also show country and currency", "default": true },
+    { "type": "checkbox", "id": "show_social", "label": "Show social icons", "default": true },
+    { "type": "checkbox", "id": "show_payment_icons", "label": "Show payment icons", "default": true },
+    { "type": "text", "id": "payment_text", "label": "Text before the payment icons", "info": "Optional, for example We accept" },
+    { "type": "checkbox", "id": "show_powered_by", "label": "Show Powered by Shopify", "default": false }
+  ],
+  "presets": [
+    {
+      "name": "Margin footer",
+      "blocks": [
+        { "type": "_footer-newsletter" },
+        { "type": "_footer-menu", "settings": { "heading": "Shop", "menu": "main-menu" } },
+        { "type": "_footer-menu", "settings": { "heading": "Help", "menu": "footer" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

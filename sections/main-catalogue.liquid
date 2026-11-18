@@ -1,0 +1,500 @@
+{%- comment -%}
+  Margin's product page, set like a catalogue page. The photos are numbered plates with italic
+  captions, stacked one under another (or in pairs); the name, price and buying blocks stay beside
+  them as shoppers scroll. On phones the plates swipe with a counter.
+{%- endcomment -%}
+
+{%- liquid
+  assign current_variant = product.selected_or_first_available_variant
+  assign form_id = 'ProductForm-' | append: section.id
+  assign zoom_id = 'Zoom-' | append: section.id
+  assign rating = product.metafields.reviews.rating.value
+  assign rating_count = product.metafields.reviews.rating_count.value | default: 0
+  assign home_collection = collection
+  if home_collection == blank
+    assign home_collection = product.collections.first
+  endif
+  assign media_count = 0
+  for media in product.media
+    if media.media_type == 'image' or media.media_type == 'video' or media.media_type == 'external_video'
+      assign media_count = media_count | plus: 1
+    endif
+  endfor
+  assign plate_word = settings.plate_word | default: 'Plate'
+-%}
+
+<product-info
+  class="catalogue catalogue--{{ section.settings.plates_layout }} catalogue--plates-{{ section.settings.plates_position }} color-{{ section.settings.color_scheme }}"
+  data-section="{{ section.id }}"
+  data-url="{{ product.url }}"
+  data-update-url="true"
+  style="--plate-ratio: {{ section.settings.photo_ratio }};"
+>
+  <div class="catalogue__inner page-width">
+    <catalogue-plates class="catalogue__plates catalogue__plates--{{ section.settings.media_fit }}" data-zoom="{{ zoom_id }}">
+      <ol class="catalogue__track" role="list" aria-label="{{ 'products.product.gallery' | t }}" data-plate-track>
+        {%- assign plate_no = 0 -%}
+        {%- for media in product.media -%}
+          {%- unless media.media_type == 'image' or media.media_type == 'video' or media.media_type == 'external_video' -%}{%- continue -%}{%- endunless -%}
+          {%- assign plate_no = plate_no | plus: 1 -%}
+          <li class="catalogue__plate" data-media-id="{{ media.id }}">
+            <figure class="catalogue__figure">
+              <div class="catalogue__frame">
+                {%- case media.media_type -%}
+                  {%- when 'image' -%}
+                    {%- liquid
+                      assign media_alt = media.alt | default: product.title | escape
+                      assign media_loading = 'lazy'
+                      if plate_no <= 2
+                        assign media_loading = 'eager'
+                      endif
+                    -%}
+                    <button
+                      type="button"
+                      class="catalogue__zoom"
+                      data-modal-open="{{ zoom_id }}"
+                      data-zoom-to="{{ media.id }}"
+                      aria-label="{{ 'products.product.zoom' | t: number: plate_no }}"
+                    >
+                      {{ media | image_url: width: 1800 | image_tag: loading: media_loading, widths: '400, 600, 800, 1100, 1400, 1800', sizes: '(min-width: 990px) 55vw, 90vw', alt: media_alt }}
+                    </button>
+                  {%- else -%}
+                    {{ media | media_tag: image_size: '1400x', autoplay: false, loop: false, controls: true }}
+                {%- endcase -%}
+              </div>
+              {%- if section.settings.show_captions -%}
+                <figcaption class="catalogue__caption">
+                  <span class="caption">
+                    {{- plate_word | escape }} {% if plate_no < 10 %}0{% endif %}{{ plate_no -}}
+                    {%- if media.alt != blank and media.alt != product.title %} — {{ media.alt | escape }}{% endif -%}
+                  </span>
+                  <span>{{ plate_no }} / {{ media_count }}</span>
+                </figcaption>
+              {%- endif -%}
+            </figure>
+          </li>
+        {%- else -%}
+          {%- for i in (1..2) -%}
+            <li class="catalogue__plate">
+              <figure class="catalogue__figure">
+                <div class="catalogue__frame">{% render 'media-placeholder', kind: 'product', index: i, label: product.title %}</div>
+                {%- if section.settings.show_captions -%}
+                  <figcaption class="catalogue__caption"><span class="caption">{{ plate_word | escape }} 0{{ i }}</span><span>{{ i }} / 2</span></figcaption>
+                {%- endif -%}
+              </figure>
+            </li>
+          {%- endfor -%}
+        {%- endfor -%}
+      </ol>
+      {%- if media_count > 1 -%}
+        <p class="catalogue__count" aria-live="polite"><span data-plate-current>1</span> / {{ media_count }}</p>
+      {%- endif -%}
+    </catalogue-plates>
+
+    <div class="catalogue__info">
+      <div class="catalogue__sticky">
+        {%- if section.settings.show_collection and home_collection != blank -%}
+          <a class="catalogue__crumb caption" href="{{ home_collection.url }}">{{ home_collection.title | escape }}</a>
+        {%- elsif section.settings.show_collection and product.type != blank -%}
+          <span class="catalogue__crumb caption">{{ product.type | escape }}</span>
+        {%- endif -%}
+        <h1 class="catalogue__title">{{ product.title | escape }}</h1>
+        <div class="catalogue__priceline">
+          {% content_for 'block', type: 'product-price', id: 'price' %}
+          {%- if rating != blank -%}
+            <a class="catalogue__rating" href="#reviews">
+              {% render 'stars', rating: rating.rating, scale: rating.scale_max %}
+              <span><bdi dir="ltr">{{ rating.rating | round: 1 }}</bdi>{% if rating_count > 0 %} ({{ rating_count }}){% endif %}</span>
+            </a>
+          {%- endif -%}
+        </div>
+        <div class="catalogue__blocks">
+          {% content_for 'blocks' %}
+        </div>
+        {%- if section.settings.show_description -%}
+          {% content_for 'block', type: 'product-description', id: 'description' %}
+        {%- endif -%}
+        {% content_for 'block', type: 'accordion', id: 'details' %}
+      </div>
+    </div>
+  </div>
+
+  {%- if section.settings.sticky_atc != 'off' -%}
+    <sticky-atc class="sticky-atc sticky-atc--{{ section.settings.sticky_atc }} color-{{ section.settings.color_scheme }}" data-target="{{ form_id }}">
+      <div class="sticky-atc__inner page-width">
+        <div class="sticky-atc__media">
+          {%- if product.featured_media -%}
+            {{ product.featured_media | image_url: width: 120, height: 120, crop: 'center' | image_tag: loading: 'lazy', alt: '' }}
+          {%- endif -%}
+        </div>
+        <div class="sticky-atc__info">
+          <span class="sticky-atc__title">{{ product.title | escape }}</span>
+          <div data-update="sticky-price">{% render 'price', variant: current_variant %}</div>
+        </div>
+        <div class="sticky-atc__button" data-update="sticky-button">
+          <button
+            type="submit"
+            form="{{ form_id }}"
+            class="button button--primary"
+            {% unless current_variant.available %}
+              disabled
+            {% endunless %}
+          >
+            {%- if current_variant.available -%}
+              {{ 'products.product.add_to_cart' | t }}
+            {%- else -%}
+              {{ 'products.product.sold_out' | t }}
+            {%- endif -%}
+          </button>
+        </div>
+      </div>
+    </sticky-atc>
+  {%- endif -%}
+
+  <script type="application/json" data-product-variants>
+    {{ product.variants | json }}
+  </script>
+  <script type="application/ld+json">
+    {{ product | structured_data }}
+  </script>
+</product-info>
+
+{%- if product.media.size > 0 -%}
+  <dialog id="{{ zoom_id }}" class="modal zoom-modal" aria-label="{{ 'products.product.gallery' | t }}">
+    <button type="button" class="icon-button modal__close" data-modal-close aria-label="{{ 'general.accessibility.close' | t }}">
+      {% render 'icon', icon: 'close' %}
+    </button>
+    <ul class="zoom-modal__list" role="list">
+      {%- for media in product.media -%}
+        {%- if media.media_type == 'image' -%}
+          <li data-zoom-media="{{ media.id }}">
+            {{ media | image_url: width: 2400 | image_tag: loading: 'lazy', widths: '1000, 1600, 2400', sizes: '100vw', alt: media.alt }}
+          </li>
+        {%- endif -%}
+      {%- endfor -%}
+    </ul>
+  </dialog>
+{%- endif -%}
+
+{% javascript %}
+  if (!customElements.get('catalogue-plates')) {
+    class CataloguePlates extends HTMLElement {
+      connectedCallback() {
+        this.track = this.querySelector('[data-plate-track]');
+        if (!this.track) return;
+        this.plates = Array.from(this.track.children);
+        this.current = this.querySelector('[data-plate-current]');
+        this.reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        this.phone = window.matchMedia('(max-width: 989px)');
+
+        this.track.addEventListener(
+          'scroll',
+          () => {
+            if (!this.phone.matches || this.ticking) return;
+            this.ticking = true;
+            requestAnimationFrame(() => {
+              this.ticking = false;
+              const step = this.plates[0]?.offsetWidth || 1;
+              const index = Math.round(Math.abs(this.track.scrollLeft) / step);
+              if (this.current) this.current.textContent = String(Math.min(this.plates.length, index + 1));
+            });
+          },
+          { passive: true }
+        );
+
+        this.addEventListener('click', (event) => {
+          const opener = event.target.closest('[data-zoom-to]');
+          if (!opener) return;
+          const dialog = document.getElementById(this.dataset.zoom);
+          const target = dialog?.querySelector(`[data-zoom-media="${opener.dataset.zoomTo}"]`);
+          if (target) requestAnimationFrame(() => target.scrollIntoView({ block: 'start' }));
+        });
+
+        this.info = this.closest('product-info');
+        this.onVariant = (event) => {
+          const id = event.detail?.variant?.featured_media?.id;
+          if (!id) return;
+          const index = this.plates.findIndex((plate) => plate.dataset.mediaId === String(id));
+          if (index >= 0) this.show(index);
+        };
+        this.info?.addEventListener('variant:change', this.onVariant);
+      }
+
+      disconnectedCallback() {
+        this.info?.removeEventListener('variant:change', this.onVariant);
+      }
+
+      show(index) {
+        const plate = this.plates[index];
+        const behavior = this.reduce ? 'auto' : 'smooth';
+        if (this.phone.matches) {
+          const rtl = getComputedStyle(this.track).direction === 'rtl';
+          const gap = parseFloat(getComputedStyle(this.track).columnGap) || 0;
+          this.track.scrollTo({ left: index * (plate.offsetWidth + gap) * (rtl ? -1 : 1), behavior });
+          return;
+        }
+        const header = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--header-height')) || 0;
+        const top = plate.getBoundingClientRect().top + window.scrollY - header - 24;
+        if (Math.abs(plate.getBoundingClientRect().top) > 40) window.scrollTo({ top, behavior });
+      }
+    }
+    customElements.define('catalogue-plates', CataloguePlates);
+  }
+{% endjavascript %}
+
+{% stylesheet %}
+  .catalogue {
+    display: block;
+    padding-top: clamp(20px, 3vw, 44px);
+    padding-bottom: var(--space-medium);
+  }
+  .catalogue__inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(320px, 1fr);
+    gap: clamp(32px, 5vw, 88px);
+    align-items: start;
+  }
+  .catalogue--plates-end .catalogue__plates {
+    order: 2;
+  }
+  catalogue-plates {
+    display: block;
+    min-width: 0;
+  }
+  .catalogue__track {
+    display: grid;
+    gap: clamp(28px, 3.4vw, 52px);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .catalogue--pairs .catalogue__track {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(20px, 2.4vw, 36px) var(--grid-gap);
+  }
+  .catalogue--pairs .catalogue__plate:first-child {
+    grid-column: 1 / -1;
+  }
+  .catalogue__figure {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+  }
+  .catalogue__frame {
+    position: relative;
+    aspect-ratio: var(--plate-ratio, 0.8);
+    overflow: hidden;
+    background: var(--tint-1, var(--color-surface));
+  }
+  .catalogue__zoom {
+    display: block;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: zoom-in;
+  }
+  .catalogue__frame img,
+  .catalogue__frame video,
+  .catalogue__frame iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .catalogue__plates--contain .catalogue__frame img {
+    object-fit: contain;
+    padding: 6%;
+  }
+  .catalogue__caption {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    font-size: 0.875rem;
+    color: var(--color-muted);
+  }
+  .catalogue__caption > span:last-child {
+    flex: none;
+    direction: ltr;
+    unicode-bidi: isolate;
+  }
+  .catalogue__count {
+    display: none;
+  }
+
+  .catalogue__info {
+    min-width: 0;
+  }
+  .catalogue__sticky {
+    position: sticky;
+    top: calc(var(--header-height, 0px) + 28px);
+    display: grid;
+    gap: 18px;
+  }
+  .catalogue__crumb {
+    justify-self: start;
+    font-size: 1rem;
+    color: var(--color-muted);
+    text-decoration: none;
+  }
+  .catalogue__crumb:hover {
+    color: var(--color-text);
+  }
+  .catalogue__title {
+    margin: 0;
+    font-size: calc(clamp(1.8rem, 2.8vw, 2.6rem) * var(--heading-scale));
+    line-height: var(--heading-lh);
+  }
+  .catalogue__priceline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px 16px;
+  }
+  .catalogue__priceline .price {
+    font-size: 1.125rem;
+  }
+  .catalogue__rating {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8125rem;
+    color: var(--color-muted);
+    text-decoration: none;
+  }
+  .catalogue__blocks {
+    display: grid;
+    gap: 18px;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .catalogue__plate {
+      animation: catalogue-in 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    }
+    .catalogue__plate:nth-child(2) {
+      animation-delay: 0.12s;
+    }
+  }
+  @keyframes catalogue-in {
+    from {
+      opacity: 0;
+      translate: 0 28px;
+    }
+  }
+
+  @media (max-width: 989px) {
+    .catalogue__inner,
+    .catalogue--plates-end .catalogue__inner {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .catalogue--plates-end .catalogue__plates {
+      order: 0;
+    }
+    .catalogue__track,
+    .catalogue--pairs .catalogue__track {
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: 86%;
+      grid-template-columns: none;
+      gap: 12px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+      margin-inline: calc(var(--gutter) * -1);
+      padding-inline: var(--gutter);
+      scroll-padding-inline: var(--gutter);
+    }
+    .catalogue--pairs .catalogue__plate:first-child {
+      grid-column: auto;
+    }
+    .catalogue__plate {
+      scroll-snap-align: start;
+    }
+    .catalogue__caption > span:last-child {
+      display: none;
+    }
+    .catalogue__count {
+      display: block;
+      margin: 10px 0 0;
+      font-size: 0.8125rem;
+      color: var(--color-muted);
+      direction: ltr;
+      unicode-bidi: isolate;
+    }
+    .catalogue__sticky {
+      position: static;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Product catalogue page",
+  "tag": "section",
+  "class": "catalogue-section",
+  "blocks": [{ "type": "@theme" }, { "type": "@app" }],
+  "settings": [
+    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1" },
+    { "type": "header", "content": "Plates" },
+    {
+      "type": "select",
+      "id": "plates_layout",
+      "label": "Photos",
+      "options": [
+        { "value": "stacked", "label": "One under another" },
+        { "value": "pairs", "label": "First one large, then in pairs" }
+      ],
+      "default": "stacked"
+    },
+    {
+      "type": "select",
+      "id": "plates_position",
+      "label": "Photos position",
+      "options": [
+        { "value": "start", "label": "Start" },
+        { "value": "end", "label": "End" }
+      ],
+      "default": "start"
+    },
+    {
+      "type": "select",
+      "id": "photo_ratio",
+      "label": "Photo shape",
+      "options": [
+        { "value": "0.8", "label": "Portrait 4:5" },
+        { "value": "0.75", "label": "Portrait 3:4" },
+        { "value": "0.667", "label": "Tall 2:3" },
+        { "value": "1", "label": "Square" }
+      ],
+      "default": "0.8"
+    },
+    {
+      "type": "select",
+      "id": "media_fit",
+      "label": "Photos in the frame",
+      "options": [
+        { "value": "cover", "label": "Fill the frame" },
+        { "value": "contain", "label": "Show the whole photo" }
+      ],
+      "default": "cover"
+    },
+    { "type": "checkbox", "id": "show_captions", "label": "Show plate captions", "info": "Plate 01 and the photo's alt text, for example Front or Worn open. The word comes from Theme settings > Catalogue.", "default": true },
+    { "type": "header", "content": "Details" },
+    { "type": "checkbox", "id": "show_collection", "label": "Show the collection above the name", "default": true },
+    { "type": "checkbox", "id": "show_description", "label": "Show the description", "default": true },
+    {
+      "type": "select",
+      "id": "sticky_atc",
+      "label": "Sticky add to cart bar",
+      "options": [
+        { "value": "mobile", "label": "Mobile only" },
+        { "value": "always", "label": "Always" },
+        { "value": "off", "label": "Off" }
+      ],
+      "default": "mobile"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,271 @@
+{
+  "sections": {
+    "hero": {
+      "type": "plate-hero",
+      "settings": {
+        "color_scheme": "scheme-1",
+        "layout": "side",
+        "media_position": "start",
+        "height": "full",
+        "aspect_ratio": "0.8",
+        "aspect_ratio_mobile": "adapt",
+        "caption": "Plate 01 — the new season",
+        "eyebrow": "New arrivals",
+        "heading": "Clothes for\nthe *quiet* days",
+        "text": "<p>Everyday pieces in linen, cotton and wool, cut to be worn often.</p>",
+        "button_label": "Shop new arrivals",
+        "button_style": "primary",
+        "button_label_2": "All collections",
+        "padding_top": "small",
+        "padding_bottom": "medium"
+      }
+    },
+    "new_in": {
+      "type": "featured-products",
+      "blocks": {
+        "tab_new": {
+          "type": "tab",
+          "settings": {
+            "label": "New drop",
+            "show": "newest"
+          }
+        },
+        "tab_all": {
+          "type": "tab",
+          "settings": {
+            "label": "All",
+            "show": "all"
+          }
+        },
+        "tab_sale": {
+          "type": "tab",
+          "settings": {
+            "label": "On sale",
+            "show": "on_sale"
+          }
+        }
+      },
+      "block_order": [
+        "tab_new",
+        "tab_all",
+        "tab_sale"
+      ],
+      "settings": {
+        "color_scheme": "scheme-1",
+        "eyebrow": "This season",
+        "heading": "New *arrivals*",
+        "view_all_link": "/collections/all",
+        "view_all_label": "View all",
+        "view_all_position": "header",
+        "header_alignment": "start",
+        "tab_style": "underline",
+        "layout": "slider",
+        "products_to_show": 8,
+        "columns_desktop": 4,
+        "columns_mobile": "2",
+        "mobile_layout": "swipe",
+        "padding_top": "large",
+        "padding_bottom": "large"
+      }
+    },
+    "chapters": {
+      "type": "chapters",
+      "blocks": {
+        "chapter_1": {
+          "type": "_chapter",
+          "settings": {
+            "products": 4
+          }
+        },
+        "chapter_2": {
+          "type": "_chapter",
+          "settings": {
+            "products": 4
+          }
+        }
+      },
+      "block_order": [
+        "chapter_1",
+        "chapter_2"
+      ],
+      "settings": {
+        "color_scheme": "scheme-1",
+        "chapter_word": "Chapter",
+        "columns": 2,
+        "title_position": "start",
+        "pin_titles": true,
+        "use_description": true,
+        "padding_top": "large",
+        "padding_bottom": "large"
+      }
+    },
+    "statement": {
+      "type": "scroll-text",
+      "settings": {
+        "color_scheme": "scheme-2",
+        "eyebrow": "From the studio",
+        "text": "Clothes for the days you don't want to *think* about what to wear.",
+        "size": "large",
+        "alignment": "center",
+        "length": "medium"
+      }
+    },
+    "compare": {
+      "type": "before-after",
+      "settings": {
+        "color_scheme": "scheme-1",
+        "wall_scheme": "scheme-2",
+        "before_label": "Plain",
+        "after_label": "Styled",
+        "start": 50,
+        "eyebrow": "Before and after",
+        "heading": "One piece, *two ways*",
+        "button_label": "Shop the piece",
+        "padding_top": "large",
+        "padding_bottom": "large"
+      }
+    },
+    "letters": {
+      "type": "letters",
+      "blocks": {
+        "letter_1": {
+          "type": "_letter"
+        },
+        "letter_2": {
+          "type": "_letter"
+        },
+        "letter_3": {
+          "type": "_letter"
+        }
+      },
+      "block_order": [
+        "letter_1",
+        "letter_2",
+        "letter_3"
+      ],
+      "settings": {
+        "color_scheme": "scheme-1",
+        "eyebrow": "Letters",
+        "heading": "From our *customers*",
+        "columns": 3,
+        "padding_top": "large",
+        "padding_bottom": "large"
+      }
+    },
+    "reels": {
+      "type": "reels",
+      "blocks": {
+        "r1": {
+          "type": "_reel"
+        },
+        "r2": {
+          "type": "_reel"
+        },
+        "r3": {
+          "type": "_reel"
+        },
+        "r4": {
+          "type": "_reel"
+        },
+        "r5": {
+          "type": "_reel"
+        }
+      },
+      "block_order": [
+        "r1",
+        "r2",
+        "r3",
+        "r4",
+        "r5"
+      ],
+      "settings": {
+        "color_scheme": "scheme-2",
+        "eyebrow": "Worn by you",
+        "heading": "On real people",
+        "padding_bottom": "large",
+        "padding_top": "large"
+      }
+    },
+    "journal": {
+      "type": "journal-columns",
+      "settings": {
+        "color_scheme": "scheme-1",
+        "heading": "Journal",
+        "posts_to_show": 3,
+        "show_excerpt": true,
+        "show_author": false,
+        "show_date": true,
+        "link_label": "Read the journal",
+        "padding_top": "large",
+        "padding_bottom": "large"
+      }
+    },
+    "support": {
+      "type": "customer-support",
+      "blocks": {
+        "whatsapp": {
+          "type": "_support-channel",
+          "settings": {
+            "channel": "whatsapp"
+          }
+        },
+        "email": {
+          "type": "_support-channel",
+          "settings": {
+            "channel": "email",
+            "title": "Email us",
+            "text": "Send us your question or your order number",
+            "link_label": "Send an email"
+          }
+        },
+        "help": {
+          "type": "_support-channel",
+          "settings": {
+            "channel": "link",
+            "icon": "truck",
+            "title": "Delivery and returns",
+            "text": "Add a link to your shipping or returns page",
+            "link_label": "Read more"
+          }
+        }
+      },
+      "block_order": [
+        "whatsapp",
+        "email",
+        "help"
+      ],
+      "settings": {
+        "color_scheme": "scheme-1",
+        "layout": "list",
+        "card_style": "plain",
+        "eyebrow": "Customer care",
+        "heading": "Questions? *Write to us*"
+      }
+    },
+    "newsletter": {
+      "type": "newsletter",
+      "settings": {
+        "color_scheme": "scheme-2",
+        "layout": "split",
+        "arch": false,
+        "eyebrow": "Newsletter",
+        "heading": "New pieces, *first*",
+        "text": "<p>A short letter when new pieces arrive. Nothing else.</p>",
+        "padding_top": "large",
+        "padding_bottom": "large"
+      }
+    }
+  },
+  "order": [
+    "hero",
+    "new_in",
+    "chapters",
+    "statement",
+    "compare",
+    "letters",
+    "reels",
+    "journal",
+    "support",
+    "newsletter"
+  ]
+}

@@ -1,0 +1,560 @@
+{%- comment -%}
+  Customer support: how to reach the store (WhatsApp, phone, email, help pages), opening hours
+  and an optional photo of the team or the studio.
+{%- endcomment -%}
+
+{%- liquid
+  assign layout = section.settings.layout
+  assign has_image = false
+  if layout == 'split' and section.settings.image != blank
+    assign has_image = true
+  endif
+-%}
+
+<section
+  class="section color-{{ section.settings.color_scheme }}"
+  style="--pt: var(--space-{{ section.settings.padding_top }}); --pb: var(--space-{{ section.settings.padding_bottom }});"
+>
+  <div
+    class="page-width support support--{{ layout }} support--{{ section.settings.card_style }} support--align-{{ section.settings.alignment }}{% if has_image %} support--image-{{ section.settings.image_position }}{% endif %}"
+    style="--support-cols: {{ section.settings.columns }}; --support-cols-mobile: {{ section.settings.columns_mobile }};"
+  >
+    {%- if has_image -%}
+      <div class="support__media">
+        {{
+          section.settings.image
+          | image_url: width: 1600
+          | image_tag: widths: '450, 750, 1100, 1600', sizes: '(min-width: 990px) 45vw, 100vw', loading: 'lazy', class: 'support__img'
+        }}
+      </div>
+    {%- endif -%}
+
+    <div class="support__main">
+      <div class="support__head">
+        {%- if section.settings.eyebrow != blank -%}
+          <p class="support__eyebrow label-mono">{{ section.settings.eyebrow | escape }}</p>
+        {%- endif -%}
+        {%- if section.settings.heading != blank -%}
+          <h2 class="support__heading h2">{% render 'accent-text', text: section.settings.heading %}</h2>
+        {%- endif -%}
+        {%- if section.settings.text != blank -%}
+          <div class="support__intro rte">{{ section.settings.text }}</div>
+        {%- endif -%}
+        {%- if section.settings.hours != blank -%}
+          <p class="support__hours">
+            {% render 'icon', icon: 'clock' %}
+            {%- if section.settings.hours_label != blank -%}
+              <strong>{{ section.settings.hours_label | escape }}</strong>
+            {%- endif -%}
+            <span>{{ section.settings.hours | escape }}</span>
+          </p>
+        {%- endif -%}
+      </div>
+
+      {%- if section.blocks.size > 0 -%}
+        <ul class="support__list" role="list">
+          {% content_for 'blocks' %}
+        </ul>
+      {%- endif -%}
+
+      {%- if section.settings.button_label != blank -%}
+        <div class="support__actions">
+          <a class="button button--{{ section.settings.button_style }}" href="{{ section.settings.button_link | default: routes.root_url }}">
+            {{- section.settings.button_label | escape -}}
+          </a>
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% stylesheet %}
+  .support {
+    display: grid;
+    gap: clamp(28px, 4vw, 56px);
+  }
+  .support__main {
+    display: grid;
+    gap: clamp(22px, 3vw, 36px);
+    align-content: center;
+  }
+  .support__head {
+    display: grid;
+    gap: 12px;
+    max-width: 640px;
+  }
+  .support--align-center .support__head {
+    justify-items: center;
+    margin-inline: auto;
+    text-align: center;
+  }
+  .support--align-center .support__actions {
+    justify-content: center;
+  }
+  .support__eyebrow,
+  .support__heading {
+    margin: 0;
+  }
+  .support__eyebrow {
+    color: var(--color-muted);
+  }
+  .support__intro {
+    color: var(--color-body);
+  }
+  .support__hours {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin: 4px 0 0;
+    font-size: 0.875rem;
+    color: var(--color-body);
+  }
+  .support__hours .icon {
+    width: 16px;
+    height: 16px;
+  }
+
+  .support__list {
+    display: grid;
+    grid-template-columns: repeat(var(--support-cols-mobile), minmax(0, 1fr));
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  @media (min-width: 750px) {
+    .support__list {
+      grid-template-columns: repeat(min(var(--support-cols), 2), minmax(0, 1fr));
+      gap: 16px;
+    }
+  }
+  @media (min-width: 990px) {
+    .support--cards .support__list {
+      grid-template-columns: repeat(var(--support-cols), minmax(0, 1fr));
+    }
+  }
+  .support--list .support__list,
+  .support--split .support__list {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .support__item {
+    display: flex;
+    min-width: 0;
+  }
+  .support__card {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    padding: clamp(18px, 2.4vw, 28px);
+    border-radius: var(--radius-md);
+    color: inherit;
+    text-decoration: none;
+    transition:
+      translate 0.3s var(--card-ease, ease),
+      border-color 0.3s ease,
+      background-color 0.3s ease;
+  }
+  .support--outline .support__card {
+    border: 1px solid color-mix(in srgb, var(--color-text) 18%, transparent);
+  }
+  .support--filled .support__card {
+    background: color-mix(in srgb, var(--color-text) 6%, var(--color-bg));
+  }
+  .support--plain .support__card {
+    padding-inline: 0;
+  }
+  .support--list .support__card,
+  .support--split .support__card {
+    flex-direction: row;
+    align-items: center;
+    gap: 18px;
+    padding-block: 18px;
+    padding-inline: 0;
+    border: 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-text) 16%, transparent);
+    border-radius: 0;
+    background: none;
+  }
+  .support--list .support__item:first-child .support__card,
+  .support--split .support__item:first-child .support__card {
+    border-top: 1px solid color-mix(in srgb, var(--color-text) 16%, transparent);
+  }
+  .support__icon {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: var(--color-text);
+    color: var(--color-bg);
+  }
+  .support__icon .icon {
+    width: 20px;
+    height: 20px;
+  }
+  .support__body {
+    display: grid;
+    gap: 6px;
+    min-width: 0;
+  }
+  .support__title {
+    margin: 0;
+  }
+  .support__text {
+    font-size: 0.9rem;
+    color: var(--color-body);
+  }
+  .support__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+    font-family: var(--font-label, inherit);
+    font-size: 0.8125rem;
+    letter-spacing: var(--label-ls, 0.04em);
+    text-transform: var(--label-case, none);
+    overflow-wrap: anywhere;
+  }
+  .support__link .icon {
+    width: 14px;
+    height: 14px;
+    flex: none;
+    transition: translate 0.3s ease;
+  }
+  [dir='rtl'] .support__link .icon {
+    scale: -1 1;
+  }
+  .support__actions {
+    display: flex;
+  }
+
+  @media (hover: hover) {
+    a.support__card:hover .support__link .icon {
+      translate: 4px 0;
+    }
+    [dir='rtl'] a.support__card:hover .support__link .icon {
+      translate: -4px 0;
+    }
+    .support--outline a.support__card:hover {
+      border-color: var(--color-text);
+    }
+    .support--filled a.support__card:hover {
+      translate: 0 -3px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .support__card,
+    .support__link .icon {
+      transition: none;
+    }
+  }
+
+  .support__media {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-md);
+    aspect-ratio: var(--support-ratio, 4 / 5);
+  }
+  .support__img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  @media (min-width: 990px) {
+    .support--split.support--image-start,
+    .support--split.support--image-end {
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+      align-items: center;
+    }
+    .support--image-end .support__media {
+      order: 2;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Customer support",
+  "tag": "section",
+  "class": "support-section",
+  "blocks": [
+    {
+      "type": "_support-channel"
+    }
+  ],
+  "max_blocks": 8,
+  "disabled_on": {
+    "groups": [
+      "header"
+    ]
+  },
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Layout",
+      "options": [
+        {
+          "value": "cards",
+          "label": "Cards in a row"
+        },
+        {
+          "value": "list",
+          "label": "List"
+        },
+        {
+          "value": "split",
+          "label": "Photo beside a list"
+        }
+      ],
+      "default": "cards"
+    },
+    {
+      "type": "select",
+      "id": "card_style",
+      "label": "Card style",
+      "options": [
+        {
+          "value": "outline",
+          "label": "Outline"
+        },
+        {
+          "value": "filled",
+          "label": "Filled"
+        },
+        {
+          "value": "plain",
+          "label": "Plain"
+        }
+      ],
+      "default": "outline"
+    },
+    {
+      "type": "range",
+      "id": "columns",
+      "label": "Cards per row on desktop",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "label": "Cards per row on phones",
+      "options": [
+        {
+          "value": "1",
+          "label": "1"
+        },
+        {
+          "value": "2",
+          "label": "2"
+        }
+      ],
+      "default": "1"
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "Heading alignment",
+      "options": [
+        {
+          "value": "start",
+          "label": "Start"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        }
+      ],
+      "default": "start"
+    },
+    {
+      "type": "header",
+      "content": "Text"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Small title",
+      "default": "Customer support"
+    },
+    {
+      "type": "textarea",
+      "id": "heading",
+      "label": "Heading",
+      "info": "Wrap words in *asterisks* to highlight them",
+      "default": "Need a *hand?*"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Text",
+      "default": "<p>Ask us about sizes, orders, delivery or returns.</p>"
+    },
+    {
+      "type": "text",
+      "id": "hours_label",
+      "label": "Hours label",
+      "default": "Hours"
+    },
+    {
+      "type": "text",
+      "id": "hours",
+      "label": "Opening hours",
+      "info": "Leave empty to hide. For example: Saturday to Thursday, 10 am to 8 pm"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "info": "For example a link to your FAQ or contact page"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "select",
+      "id": "button_style",
+      "label": "Button style",
+      "options": [
+        {
+          "value": "primary",
+          "label": "Solid"
+        },
+        {
+          "value": "secondary",
+          "label": "Outline"
+        }
+      ],
+      "default": "secondary"
+    },
+    {
+      "type": "header",
+      "content": "Photo"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image",
+      "info": "Shown with the Photo beside a list layout"
+    },
+    {
+      "type": "select",
+      "id": "image_position",
+      "label": "Photo position",
+      "options": [
+        {
+          "value": "start",
+          "label": "Start"
+        },
+        {
+          "value": "end",
+          "label": "End"
+        }
+      ],
+      "default": "start"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "select",
+      "id": "padding_top",
+      "label": "Top spacing",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "small",
+          "label": "Small"
+        },
+        {
+          "value": "medium",
+          "label": "Medium"
+        },
+        {
+          "value": "large",
+          "label": "Large"
+        }
+      ],
+      "default": "large"
+    },
+    {
+      "type": "select",
+      "id": "padding_bottom",
+      "label": "Bottom spacing",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "small",
+          "label": "Small"
+        },
+        {
+          "value": "medium",
+          "label": "Medium"
+        },
+        {
+          "value": "large",
+          "label": "Large"
+        }
+      ],
+      "default": "large"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Customer support",
+      "blocks": [
+        {
+          "type": "_support-channel",
+          "settings": {
+            "channel": "whatsapp"
+          }
+        },
+        {
+          "type": "_support-channel",
+          "settings": {
+            "channel": "email",
+            "title": "Email us",
+            "text": "Send us your question or your order number",
+            "link_label": "Send an email"
+          }
+        },
+        {
+          "type": "_support-channel",
+          "settings": {
+            "channel": "link",
+            "icon": "truck",
+            "title": "Delivery and returns",
+            "text": "Add a link to your shipping or returns page",
+            "link_label": "Read more"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

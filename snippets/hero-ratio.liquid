@@ -1,0 +1,57 @@
+{% doc %}
+  Prints the CSS variables --hero-ratio and --hero-ratio-mobile for a hero whose height follows
+  its media. Put the output in the hero's style attribute and add the class hero-fit.
+
+  "adapt" uses the media's own shape: the video, one image, or two images side by side (stacked
+  on phones). "ratio" uses the ratio picked in the dropdown.
+
+  @param {string} mode - adapt or ratio
+  @param {string} [ratio] - Width divided by height, used when mode is ratio
+  @param {string} [ratio_mobile] - On phones: same (follow desktop), adapt (the phone media's shape) or a width divided by height
+  @param {object} [video] - Video setting
+  @param {image} [image] - First image
+  @param {image} [image_2] - Second image
+  @param {image} [image_mobile] - Phone image
+
+  @example
+  {% render 'hero-ratio', mode: section.settings.height, ratio: section.settings.aspect_ratio, image: section.settings.image %}
+{% enddoc %}
+
+{%- liquid
+  assign hr_fit = 1.778
+  assign hr_fit_mobile = 0
+  if video != blank and video.aspect_ratio
+    assign hr_fit = video.aspect_ratio | plus: 0
+  elsif image != blank and image_2 != blank
+    assign hr_one = image.aspect_ratio | plus: 0
+    assign hr_two = image_2.aspect_ratio | plus: 0
+    assign hr_fit = hr_one | plus: hr_two
+    assign hr_inverse_two = 1.0 | divided_by: hr_two
+    assign hr_inverse = 1.0 | divided_by: hr_one | plus: hr_inverse_two
+    assign hr_fit_mobile = 1.0 | divided_by: hr_inverse
+  elsif image != blank
+    assign hr_fit = image.aspect_ratio | plus: 0
+  elsif image_mobile != blank
+    assign hr_fit = image_mobile.aspect_ratio | plus: 0
+  endif
+  if image_mobile != blank and video == blank
+    assign hr_fit_mobile = image_mobile.aspect_ratio | plus: 0
+  endif
+  if hr_fit_mobile == 0
+    assign hr_fit_mobile = hr_fit
+  endif
+
+  if mode == 'ratio'
+    assign hr_desktop = ratio | default: 1.778 | plus: 0
+    assign hr_mobile = hr_desktop
+  else
+    assign hr_desktop = hr_fit
+    assign hr_mobile = hr_fit_mobile
+  endif
+  if ratio_mobile == 'adapt'
+    assign hr_mobile = hr_fit_mobile
+  elsif ratio_mobile != blank and ratio_mobile != 'same'
+    assign hr_mobile = ratio_mobile | plus: 0
+  endif
+-%}
+--hero-ratio: {{ hr_desktop | round: 4 }}; --hero-ratio-mobile: {{ hr_mobile | round: 4 }};

@@ -1,0 +1,65 @@
+{% doc %}
+  One row in Story rows: a large photo beside a heading and text. Rows alternate sides.
+{% enddoc %}
+
+{%- liquid
+  assign row_index = 0
+  for b in section.blocks
+    if b.id == block.id
+      assign row_index = forloop.index0
+      break
+    endif
+  endfor
+  assign row_number = row_index | plus: 1
+  assign row_side = row_index | modulo: 2
+  if section.settings.first_image == 'end'
+    assign row_side = row_number | modulo: 2
+  endif
+
+  assign row_image = block.settings.image
+  if row_image == blank and section.settings.product_photos and product != blank
+    assign media_pick = row_index | plus: 1
+    assign row_image = product.media[media_pick].preview_image
+  endif
+  if row_image == blank and section.settings.product_photos and section.settings.collection != blank
+    assign row_image = section.settings.collection.products[row_index].featured_media.preview_image
+  endif
+  assign row_alt = row_image.alt | default: block.settings.heading | escape
+-%}
+
+<article class="story-row{% if row_side == 1 %} story-row--flip{% endif %}" {{ block.shopify_attributes }}>
+  <div class="story-row__media">
+    {%- if row_image != blank -%}
+      {{ row_image | image_url: width: 1600 | image_tag: loading: 'lazy', widths: '600, 900, 1200, 1600', sizes: '(min-width: 990px) 50vw, 100vw', alt: row_alt }}
+    {%- else -%}
+      {% render 'media-placeholder', kind: 'lifestyle', index: row_number %}
+    {%- endif -%}
+  </div>
+  <div class="story-row__copy">
+    {%- if block.settings.heading != blank -%}
+      <h3 class="story-row__heading">{{ block.settings.heading | escape }}</h3>
+    {%- endif -%}
+    {%- if block.settings.text != blank -%}
+      <div class="story-row__text rte">{{ block.settings.text }}</div>
+    {%- endif -%}
+    {%- if block.settings.button_label != blank -%}
+      <a class="arrow-link" href="{{ block.settings.button_link | default: routes.all_products_collection_url }}">
+        {{- block.settings.button_label | escape -}}
+        {% render 'icon', icon: 'arrow' %}
+      </a>
+    {%- endif -%}
+  </div>
+</article>
+
+{% schema %}
+{
+  "name": "Row",
+  "settings": [
+    { "type": "image_picker", "id": "image", "label": "Image" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Made to stand out" },
+    { "type": "richtext", "id": "text", "label": "Text", "default": "<p>One piece can change the whole fit. Tell the story behind it: where the idea came from and how it's made.</p>" },
+    { "type": "text", "id": "button_label", "label": "Button label" },
+    { "type": "url", "id": "button_link", "label": "Button link" }
+  ]
+}
+{% endschema %}

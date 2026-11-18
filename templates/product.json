@@ -1,0 +1,289 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-catalogue",
+      "blocks": {
+        "price": {
+          "type": "product-price",
+          "static": true,
+          "settings": {}
+        },
+        "description": {
+          "type": "product-description",
+          "static": true,
+          "settings": {}
+        },
+        "details": {
+          "type": "accordion",
+          "settings": {
+            "style": "lines",
+            "single_open": true
+          },
+          "blocks": {
+            "row_1": {
+              "type": "_accordion-row",
+              "settings": {
+                "heading": "Size and fit",
+                "icon": "ruler",
+                "content": "<p>Describe how this piece fits, and when to size up or down.</p>"
+              }
+            },
+            "row_2": {
+              "type": "_accordion-row",
+              "settings": {
+                "heading": "Materials and care",
+                "icon": "leaf",
+                "content": "<p>Describe the fabric and how to wash it so the print lasts.</p>"
+              }
+            },
+            "row_3": {
+              "type": "_accordion-row",
+              "settings": {
+                "heading": "Shipping and returns",
+                "icon": "truck",
+                "content": "<p>Write your delivery times, fees and return policy here.</p>"
+              }
+            }
+          },
+          "block_order": [
+            "row_1",
+            "row_2",
+            "row_3"
+          ],
+          "static": true
+        },
+        "variants": {
+          "type": "variant-picker",
+          "settings": {}
+        },
+        "size_guide": {
+          "type": "size-guide",
+          "settings": {}
+        },
+        "stock": {
+          "type": "inventory-status",
+          "settings": {}
+        },
+        "buy": {
+          "type": "buy-buttons",
+          "settings": {}
+        },
+        "upsell": {
+          "type": "upsell",
+          "settings": {
+            "heading": "Pairs with",
+            "style": "checkbox",
+            "source": "related",
+            "limit": 3
+          }
+        },
+        "restock": {
+          "type": "restock-alert",
+          "settings": {}
+        },
+        "save": {
+          "type": "save-button",
+          "settings": {}
+        },
+        "timeline": {
+          "type": "delivery-timeline",
+          "settings": {
+            "ship_days": 1,
+            "min_days": 1,
+            "max_days": 3,
+            "cutoff_hour": 14,
+            "show_countdown": true,
+            "skip_friday": true,
+            "skip_saturday": false,
+            "skip_sunday": false
+          }
+        },
+        "payments": {
+          "type": "payment-icons",
+          "settings": {}
+        },
+        "whatsapp": {
+          "type": "whatsapp-button",
+          "settings": {}
+        }
+      },
+      "block_order": [
+        "variants",
+        "size_guide",
+        "stock",
+        "buy",
+        "upsell",
+        "restock",
+        "save",
+        "timeline",
+        "payments",
+        "whatsapp"
+      ],
+      "settings": {
+        "color_scheme": "scheme-1",
+        "plates_layout": "stacked",
+        "plates_position": "start",
+        "photo_ratio": "0.8",
+        "media_fit": "cover",
+        "show_captions": true,
+        "show_collection": true,
+        "show_description": true,
+        "sticky_atc": "mobile"
+      }
+    },
+    "fbt": {
+      "type": "frequently-bought",
+      "settings": {
+        "color_scheme": "scheme-1",
+        "eyebrow": "Pairs with",
+        "heading": "Wear it *with*",
+        "source": "complementary",
+        "limit": 2,
+        "padding_top": "large",
+        "padding_bottom": "large"
+      }
+    },
+    "reviews": {
+      "type": "product-reviews",
+      "blocks": {
+        "review_1": {
+          "type": "_review",
+          "settings": {}
+        },
+        "review_2": {
+          "type": "_review",
+          "settings": {}
+        },
+        "review_3": {
+          "type": "_review",
+          "settings": {}
+        },
+        "review_4": {
+          "type": "_review",
+          "settings": {}
+        }
+      },
+      "block_order": [
+        "review_1",
+        "review_2",
+        "review_3",
+        "review_4"
+      ],
+      "settings": {
+        "color_scheme": "scheme-1",
+        "eyebrow": "Reviews",
+        "heading": "What customers say",
+        "layout": "slider",
+        "button_label": "Write a review",
+        "anchor": "reviews",
+        "padding_top": "large",
+        "padding_bottom": "large"
+      }
+    },
+    "reels": {
+      "type": "reels",
+      "blocks": {
+        "r1": {
+          "type": "_reel"
+        },
+        "r2": {
+          "type": "_reel"
+        },
+        "r3": {
+          "type": "_reel"
+        },
+        "r4": {
+          "type": "_reel"
+        },
+        "r5": {
+          "type": "_reel"
+        }
+      },
+      "block_order": [
+        "r1",
+        "r2",
+        "r3",
+        "r4",
+        "r5"
+      ],
+      "settings": {
+        "color_scheme": "scheme-2",
+        "eyebrow": "Worn by you",
+        "heading": "On real people",
+        "padding_bottom": "large",
+        "padding_top": "large"
+      }
+    },
+    "recommendations": {
+      "type": "product-recommendations",
+      "settings": {
+        "color_scheme": "scheme-1",
+        "heading": "You may also like",
+        "header_alignment": "start",
+        "intent": "related",
+        "limit": 4,
+        "mobile_layout": "swipe",
+        "padding_top": "large",
+        "padding_bottom": "large"
+      }
+    },
+    "recent": {
+      "type": "recently-viewed",
+      "settings": {
+        "color_scheme": "scheme-1",
+        "heading": "Recently viewed",
+        "header_alignment": "start",
+        "limit": 6,
+        "columns": 4,
+        "padding_top": "large",
+        "padding_bottom": "large"
+      }
+    },
+    "faq": {
+      "type": "faq",
+      "blocks": {
+        "q_1": {
+          "type": "_faq-item",
+          "settings": {}
+        },
+        "q_2": {
+          "type": "_faq-item",
+          "settings": {}
+        },
+        "q_3": {
+          "type": "_faq-item",
+          "settings": {}
+        },
+        "q_4": {
+          "type": "_faq-item",
+          "settings": {}
+        }
+      },
+      "block_order": [
+        "q_1",
+        "q_2",
+        "q_3",
+        "q_4"
+      ],
+      "settings": {
+        "color_scheme": "scheme-2",
+        "layout": "split",
+        "style": "lines",
+        "heading": "Questions and answers",
+        "button_label": "Chat on WhatsApp",
+        "show_whatsapp_icon": true,
+        "padding_top": "large",
+        "padding_bottom": "large"
+      }
+    }
+  },
+  "order": [
+    "main",
+    "fbt",
+    "reviews",
+    "reels",
+    "recommendations",
+    "recent",
+    "faq"
+  ]
+}

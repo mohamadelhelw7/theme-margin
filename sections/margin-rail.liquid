@@ -1,0 +1,701 @@
+{%- comment -%}
+  Margin header. On computers it is a quiet rail down the side of the page (or a plain top bar):
+  the logo, the menu, then search, account, the bag and the language at the foot. Menu items with
+  children open a panel beside the rail with their sub-links in columns. Phones get a top bar and
+  a menu drawer.
+{%- endcomment -%}
+
+{%- liquid
+  assign menu = section.settings.menu
+  assign drawer_id = 'MenuDrawer-' | append: section.id
+  assign wa_number = settings.whatsapp_number | remove: '+' | remove: ' ' | remove: '-'
+  assign layout = section.settings.layout
+  assign header_classes = 'site-header mrail mrail--' | append: layout
+  if section.settings.show_border
+    assign header_classes = header_classes | append: ' mrail--ruled'
+  endif
+-%}
+
+<header
+  class="{{ header_classes }} color-{{ section.settings.color_scheme }}"
+  data-sticky="{{ section.settings.sticky }}"
+  style="--logo-width: {{ section.settings.logo_width }}px; --logo-width-mobile: {{ section.settings.logo_width_mobile }}px;"
+>
+  <div class="mrail__inner">
+    <div class="mrail__brand">
+      <button
+        type="button"
+        class="icon-button mrail__toggle"
+        data-modal-open="{{ drawer_id }}"
+        aria-haspopup="dialog"
+        aria-controls="{{ drawer_id }}"
+        aria-label="{{ 'general.header.menu' | t }}"
+      >
+        {% render 'icon', icon: 'menu' %}
+      </button>
+      {%- if request.page_type == 'index' -%}
+        <h1 class="visually-hidden">{{ shop.name | escape }}</h1>
+      {%- endif -%}
+      <a href="{{ routes.root_url }}" class="mrail__logo site-header__logo">
+        {%- if section.settings.logo -%}
+          {{
+            section.settings.logo
+            | image_url: width: 600
+            | image_tag:
+              alt: shop.name,
+              class: 'site-header__logo-image',
+              widths: '150, 300, 450, 600',
+              sizes: '220px',
+              loading: 'eager'
+          }}
+        {%- else -%}
+          <span class="mrail__wordmark">{{ section.settings.wordmark | default: shop.name | escape }}</span>
+        {%- endif -%}
+      </a>
+      {%- if section.settings.tagline != blank -%}
+        <p class="mrail__tagline caption">{{ section.settings.tagline | escape }}</p>
+      {%- endif -%}
+    </div>
+
+    {%- if menu != blank -%}
+      {%- if layout == 'rail' -%}
+        <nav class="mrail__nav" aria-label="{{ 'general.header.main_nav' | t }}">
+          <ul class="mrail__list" role="list">
+            {%- for link in menu.links -%}
+              <li>
+                {%- if link.links != blank -%}
+                  <details class="mrail__group" data-escape-close data-click-outside>
+                    <summary class="mrail__link{% if link.child_active %} is-active{% endif %}">
+                      <span>{{ link.title | escape }}</span>
+                      <span class="mrail__arrow" aria-hidden="true">{% render 'icon', icon: 'arrow' %}</span>
+                    </summary>
+                    <div class="mrail__panel color-{{ section.settings.panel_scheme }}">
+                      <p class="mrail__panel-head">
+                        <span class="caption">{{ link.title | escape }}</span>
+                        <a href="{{ link.url }}" class="mrail__all">{{ 'general.header.view_all' | t: title: link.title }}</a>
+                      </p>
+                      <div class="mrail__panel-body">
+                        <ul class="mrail__cols" role="list">
+                          {%- for child in link.links -%}
+                            <li class="mrail__col">
+                              <a
+                                href="{{ child.url }}"
+                                class="mrail__col-title"
+                                {% if child.current %}
+                                  aria-current="page"
+                                {% endif %}
+                              >
+                                {{- child.title | escape -}}
+                              </a>
+                              {%- if child.links != blank -%}
+                                <ul class="mrail__sub" role="list">
+                                  {%- for grandchild in child.links -%}
+                                    <li><a href="{{ grandchild.url }}">{{ grandchild.title | escape }}</a></li>
+                                  {%- endfor -%}
+                                </ul>
+                              {%- endif -%}
+                            </li>
+                          {%- endfor -%}
+                        </ul>
+                        {%- if section.settings.mega_image != blank -%}
+                          <a href="{{ section.settings.mega_image_link | default: link.url }}" class="mrail__promo">
+                            <span class="mrail__promo-media">
+                              {{ section.settings.mega_image | image_url: width: 900 | image_tag: loading: 'lazy', widths: '400, 600, 900', sizes: '320px', alt: '' }}
+                            </span>
+                            {%- if section.settings.mega_image_caption != blank -%}
+                              <span class="caption">{{ section.settings.mega_image_caption | escape }}</span>
+                            {%- endif -%}
+                          </a>
+                        {%- endif -%}
+                      </div>
+                    </div>
+                  </details>
+                {%- else -%}
+                  <a
+                    class="mrail__link"
+                    href="{{ link.url }}"
+                    {% if link.current %}
+                      aria-current="page"
+                    {% endif %}
+                  >
+                    <span>{{ link.title | escape }}</span>
+                  </a>
+                {%- endif -%}
+              </li>
+            {%- endfor -%}
+          </ul>
+        </nav>
+      {%- else -%}
+        <div class="mrail__topnav">
+          {% render 'header-nav',
+            menu: menu,
+            menu_style: section.settings.menu_style,
+            mega_image: section.settings.mega_image,
+            mega_image_link: section.settings.mega_image_link,
+            mega_image_caption: section.settings.mega_image_caption
+          %}
+        </div>
+      {%- endif -%}
+    {%- endif -%}
+
+    <div class="mrail__foot">
+      {%- if section.settings.show_search -%}
+        <details class="header-search mrail__search" data-escape-close data-click-outside>
+          <summary class="mrail__action header-action">
+            {{- 'general.search.title' | t -}}
+          </summary>
+          <div class="header-search__panel mrail__search-panel color-{{ section.settings.panel_scheme }}">
+            <predictive-search class="header-search__inner">
+              <form action="{{ routes.search_url }}" method="get" role="search" class="header-search__form">
+                <label class="visually-hidden" for="HeaderSearch-{{ section.id }}">{{ 'general.search.label' | t }}</label>
+                <input
+                  id="HeaderSearch-{{ section.id }}"
+                  class="field__input"
+                  type="search"
+                  name="q"
+                  placeholder="{{ 'general.search.placeholder' | t }}"
+                  autocomplete="off"
+                  role="combobox"
+                  aria-expanded="false"
+                  aria-autocomplete="list"
+                >
+                <input type="hidden" name="options[prefix]" value="last">
+                <button type="submit" class="button button--primary">{{ 'general.search.submit' | t }}</button>
+              </form>
+              <div id="PredictiveResults-{{ section.id }}" class="header-search__results" data-predictive-results hidden></div>
+              <span class="visually-hidden" role="status" aria-live="polite" data-predictive-status></span>
+            </predictive-search>
+          </div>
+        </details>
+      {%- endif -%}
+      {%- if section.settings.show_account and shop.customer_accounts_enabled -%}
+        <a class="mrail__action mrail__account" href="{% if customer %}{{ routes.account_url }}{% else %}{{ routes.account_login_url }}{% endif %}">
+          {{- 'general.header.account' | t -}}
+        </a>
+      {%- endif -%}
+      {%- if settings.wishlist_enable and section.settings.show_saved -%}
+        <button type="button" class="mrail__action mrail__saved" data-modal-open="SavedDrawer" aria-haspopup="dialog">
+          {{- 'saved.title' | t }} <span data-saved-count data-hide-empty hidden>0</span>
+        </button>
+      {%- endif -%}
+      <a href="{{ routes.cart_url }}" class="mrail__action mrail__cart" data-cart-open>
+        {{- 'general.header.bag' | t }}
+        <span class="mrail__count">(<span data-cart-count-text>{{ cart.item_count }}</span>)</span>
+      </a>
+      {%- if section.settings.show_language or section.settings.show_country -%}
+        <div class="site-header__localization mrail__locale">
+          {% render 'localization-form', id_prefix: 'Header', show_language: section.settings.show_language, show_country: section.settings.show_country %}
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</header>
+
+<dialog id="{{ drawer_id }}" class="modal drawer drawer--start menu-drawer color-{{ section.settings.color_scheme }}" aria-label="{{ 'general.header.menu' | t }}">
+  <div class="menu-drawer__inner">
+    <div class="menu-drawer__header">
+      <span class="mrail__wordmark menu-drawer__brand">{{ section.settings.wordmark | default: shop.name | escape }}</span>
+      <button type="button" class="icon-button" data-modal-close aria-label="{{ 'general.accessibility.close' | t }}">
+        {% render 'icon', icon: 'close' %}
+      </button>
+    </div>
+    {%- if menu != blank -%}
+      <nav class="menu-drawer__nav" aria-label="{{ 'general.header.menu' | t }}">
+        <ul class="menu-drawer__list" role="list">
+          {%- for link in menu.links -%}
+            <li>
+              {%- if link.links != blank -%}
+                <details class="menu-drawer__details">
+                  <summary class="menu-drawer__link">
+                    {{ link.title | escape }}
+                    {% render 'icon', icon: 'chevron-down' %}
+                  </summary>
+                  <ul class="menu-drawer__sublist" role="list">
+                    <li><a class="menu-drawer__sublink menu-drawer__sublink--all" href="{{ link.url }}">{{ 'general.header.view_all' | t: title: link.title }}</a></li>
+                    {%- for child in link.links -%}
+                      <li>
+                        {%- if child.links != blank -%}
+                          <details class="menu-drawer__details menu-drawer__details--nested">
+                            <summary class="menu-drawer__sublink">
+                              {{ child.title | escape }}
+                              {% render 'icon', icon: 'chevron-down' %}
+                            </summary>
+                            <ul class="menu-drawer__sublist" role="list">
+                              {%- for grandchild in child.links -%}
+                                <li><a class="menu-drawer__sublink" href="{{ grandchild.url }}">{{ grandchild.title | escape }}</a></li>
+                              {%- endfor -%}
+                            </ul>
+                          </details>
+                        {%- else -%}
+                          <a class="menu-drawer__sublink" href="{{ child.url }}">{{ child.title | escape }}</a>
+                        {%- endif -%}
+                      </li>
+                    {%- endfor -%}
+                  </ul>
+                </details>
+              {%- else -%}
+                <a
+                  class="menu-drawer__link"
+                  href="{{ link.url }}"
+                  {% if link.current %}
+                    aria-current="page"
+                  {% endif %}
+                >
+                  {{- link.title | escape -}}
+                </a>
+              {%- endif -%}
+            </li>
+          {%- endfor -%}
+        </ul>
+      </nav>
+    {%- endif -%}
+    {%- if section.settings.secondary_menu != blank -%}
+      <ul class="menu-drawer__secondary" role="list">
+        {%- for link in section.settings.secondary_menu.links -%}
+          <li><a href="{{ link.url }}">{{ link.title | escape }}</a></li>
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+    <div class="menu-drawer__footer">
+      {%- if shop.customer_accounts_enabled -%}
+        <a class="button button--secondary button--full" href="{% if customer %}{{ routes.account_url }}{% else %}{{ routes.account_login_url }}{% endif %}">
+          {% render 'icon', icon: 'account' %}
+          {{ 'general.header.account' | t }}
+        </a>
+      {%- endif -%}
+      {%- if section.settings.drawer_show_whatsapp and wa_number != blank -%}
+        <a class="button button--accent button--full" href="https://wa.me/{{ wa_number }}?text={{ settings.whatsapp_message | url_encode }}" target="_blank" rel="noopener">
+          {% render 'icon', icon: 'whatsapp' %}
+          {{ 'general.whatsapp.chat' | t }}
+        </a>
+      {%- endif -%}
+      {%- if section.settings.drawer_show_localization -%}
+        {% render 'localization-form', id_prefix: 'Drawer', show_language: true, show_country: true %}
+      {%- endif -%}
+      {%- if section.settings.drawer_show_social -%}
+        {% render 'social-icons' %}
+      {%- endif -%}
+    </div>
+  </div>
+</dialog>
+
+{% javascript %}
+  if (!window.marginRailReady) {
+    window.marginRailReady = true;
+    // One rail panel open at a time
+    document.addEventListener(
+      'toggle',
+      (event) => {
+        const opened = event.target;
+        if (!(opened instanceof HTMLDetailsElement) || !opened.open) return;
+        if (!opened.matches('.mrail__group, .mrail__search')) return;
+        document.querySelectorAll('.mrail__group[open], .mrail__search[open]').forEach((other) => {
+          if (other !== opened) other.open = false;
+        });
+      },
+      true
+    );
+  }
+{% endjavascript %}
+
+{% stylesheet %}
+  .mrail {
+    background: var(--color-bg);
+  }
+  .mrail__inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: 12px 28px;
+    min-height: 64px;
+    width: 100%;
+    max-width: var(--page-width);
+    margin-inline: auto;
+    padding-inline: var(--gutter);
+  }
+  .mrail--ruled {
+    border-bottom: 1px solid var(--color-border);
+  }
+  .mrail__brand {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+  }
+  .mrail__toggle {
+    display: none;
+  }
+  .mrail__logo {
+    display: inline-flex;
+    color: inherit;
+    text-decoration: none;
+    min-width: 0;
+  }
+  .mrail__logo .site-header__logo-image {
+    width: var(--logo-width);
+    max-width: 100%;
+    height: auto;
+  }
+  .mrail__wordmark {
+    font-family: var(--font-heading);
+    font-weight: var(--font-heading-weight);
+    font-size: 1.3rem;
+    letter-spacing: var(--heading-ls);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .mrail__tagline {
+    display: none;
+    margin: 0;
+    font-size: 0.8125rem;
+    color: var(--color-muted);
+  }
+  .mrail__topnav .site-nav__link {
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+  }
+  .mrail__foot {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px 18px;
+  }
+  .mrail__action {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 40px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    font-size: 0.875rem;
+    text-decoration: none;
+    cursor: pointer;
+    list-style: none;
+  }
+  .mrail__action::-webkit-details-marker {
+    display: none;
+  }
+  .mrail__action:hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  /* The side rail on computers */
+  @media (min-width: 990px) {
+    .header-section:has(.mrail--rail) {
+      position: static;
+      translate: none !important;
+    }
+    body:has(.mrail--rail) {
+      padding-inline-start: var(--rail-width, 200px);
+    }
+    .mrail--rail {
+      position: fixed;
+      z-index: 40;
+      top: 0;
+      bottom: 0;
+      inset-inline-start: 0;
+      width: var(--rail-width, 200px);
+      border-bottom: 0;
+      border-inline-end: 1px solid var(--color-border);
+      overflow-y: auto;
+      scrollbar-width: none;
+    }
+    .mrail--rail .mrail__inner {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 34px;
+      min-height: 100%;
+      max-width: none;
+      padding: 30px 24px 26px;
+    }
+    .mrail--rail .mrail__brand {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .mrail--rail .mrail__tagline {
+      display: block;
+    }
+    .mrail__list {
+      display: grid;
+      gap: 2px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .mrail__link {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 7px 0;
+      color: inherit;
+      text-decoration: none;
+      font-size: 0.9375rem;
+      cursor: pointer;
+      list-style: none;
+    }
+    .mrail__link::-webkit-details-marker {
+      display: none;
+    }
+    .mrail__link[aria-current='page'],
+    .mrail__link.is-active,
+    .mrail__group[open] > .mrail__link {
+      font-weight: 700;
+    }
+    .mrail__arrow {
+      display: grid;
+      opacity: 0;
+      transition: opacity 0.25s ease, translate 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+    .mrail__arrow .icon {
+      width: 14px;
+      height: 14px;
+    }
+    [dir='rtl'] .mrail__arrow .icon {
+      scale: -1 1;
+    }
+    .mrail__link:hover .mrail__arrow,
+    .mrail__group[open] .mrail__arrow {
+      opacity: 1;
+      translate: 3px 0;
+    }
+    [dir='rtl'] .mrail__link:hover .mrail__arrow,
+    [dir='rtl'] .mrail__group[open] .mrail__arrow {
+      translate: -3px 0;
+    }
+    .mrail--rail .mrail__foot {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 2px;
+      margin-top: auto;
+      color: var(--color-muted);
+    }
+    .mrail--rail .mrail__action {
+      min-height: 30px;
+      color: inherit;
+    }
+    .mrail--rail .mrail__action:hover {
+      color: var(--color-text);
+    }
+    .mrail__locale {
+      margin-top: 10px;
+    }
+
+    /* The panel beside the rail */
+    .mrail__panel,
+    .mrail--rail .mrail__search-panel {
+      position: fixed;
+      z-index: 39;
+      top: 0;
+      bottom: 0;
+      inset-inline-start: var(--rail-width, 200px);
+      width: min(720px, calc(100vw - var(--rail-width, 200px)));
+      padding: 34px 40px;
+      overflow-y: auto;
+      border-inline-end: 1px solid var(--color-border);
+      background: var(--color-bg);
+      color: var(--color-text);
+      box-shadow: 24px 0 60px -40px rgb(0 0 0 / 0.35);
+      animation: mrail-in 0.4s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    }
+    [dir='rtl'] .mrail__panel,
+    [dir='rtl'] .mrail--rail .mrail__search-panel {
+      box-shadow: -24px 0 60px -40px rgb(0 0 0 / 0.35);
+    }
+    .mrail--rail .mrail__search-panel .header-search__inner {
+      padding: 0;
+    }
+    .mrail__panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 16px;
+      margin: 0 0 26px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .mrail__panel-head .caption {
+      font-size: 1.5rem;
+    }
+    .mrail__all {
+      font-size: 0.875rem;
+      color: inherit;
+      text-underline-offset: 4px;
+    }
+    .mrail__panel-body {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 32px;
+    }
+    .mrail__cols {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 26px 28px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      align-content: start;
+    }
+    .mrail__col-title {
+      display: block;
+      margin-bottom: 8px;
+      color: inherit;
+      text-decoration: none;
+      font-family: var(--font-heading);
+      font-weight: var(--font-heading-weight);
+      font-size: 1.125rem;
+      letter-spacing: var(--heading-ls);
+    }
+    .mrail__col-title:hover,
+    .mrail__sub a:hover {
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+    .mrail__sub {
+      display: grid;
+      gap: 6px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      font-size: 0.9rem;
+    }
+    .mrail__sub a {
+      color: var(--color-muted);
+      text-decoration: none;
+    }
+    .mrail__promo {
+      display: grid;
+      gap: 8px;
+      width: 220px;
+      color: inherit;
+      text-decoration: none;
+      font-size: 0.875rem;
+    }
+    .mrail__promo-media {
+      display: block;
+      aspect-ratio: 4 / 5;
+      overflow: hidden;
+      background: var(--tint-1, var(--color-surface));
+    }
+    .mrail__promo-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+  @keyframes mrail-in {
+    from {
+      opacity: 0;
+      translate: -18px 0;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .mrail__panel,
+    .mrail--rail .mrail__search-panel {
+      animation: none;
+    }
+  }
+
+  /* Phones and tablets: a top bar and the menu drawer */
+  @media (max-width: 989px) {
+    .mrail__inner {
+      grid-template-columns: minmax(0, 1fr) auto;
+      min-height: 56px;
+    }
+    .mrail__toggle {
+      display: inline-grid;
+      margin-inline-start: -8px;
+    }
+    .mrail__logo .site-header__logo-image {
+      width: var(--logo-width-mobile);
+    }
+    .mrail__nav,
+    .mrail__topnav,
+    .mrail__account,
+    .mrail__saved,
+    .mrail__locale {
+      display: none;
+    }
+    .mrail__foot {
+      gap: 14px;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Margin header",
+  "tag": "div",
+  "class": "header-section",
+  "enabled_on": { "groups": ["header"] },
+  "settings": [
+    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1" },
+    { "type": "color_scheme", "id": "panel_scheme", "label": "Menu and search panel color scheme", "default": "scheme-1" },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Layout on computers",
+      "options": [
+        { "value": "rail", "label": "Side rail" },
+        { "value": "top", "label": "Top bar" }
+      ],
+      "default": "rail",
+      "info": "The side rail keeps the menu down the left of the page (the right in Arabic). Set its width in Theme settings > Catalogue. Phones always use a top bar."
+    },
+    { "type": "header", "content": "Logo" },
+    { "type": "image_picker", "id": "logo", "label": "Logo image" },
+    { "type": "range", "id": "logo_width", "label": "Logo width on desktop", "min": 60, "max": 240, "step": 5, "unit": "px", "default": 120 },
+    { "type": "range", "id": "logo_width_mobile", "label": "Logo width on mobile", "min": 40, "max": 200, "step": 5, "unit": "px", "default": 95 },
+    { "type": "text", "id": "wordmark", "label": "Text logo", "info": "Used when no logo image is set. Defaults to store name." },
+    { "type": "text", "id": "tagline", "label": "Line under the logo", "info": "Side rail only. For example: Everyday clothes, made slowly." },
+    { "type": "header", "content": "Menu" },
+    { "type": "link_list", "id": "menu", "label": "Menu", "default": "main-menu" },
+    {
+      "type": "select",
+      "id": "menu_style",
+      "label": "Dropdown style in the top bar",
+      "options": [
+        { "value": "mega", "label": "Mega menu" },
+        { "value": "dropdown", "label": "Dropdown" }
+      ],
+      "default": "mega",
+      "info": "In the side rail, menu items with sub-links always open a panel with their sub-links in columns"
+    },
+    { "type": "image_picker", "id": "mega_image", "label": "Menu panel image" },
+    { "type": "url", "id": "mega_image_link", "label": "Menu panel image link" },
+    { "type": "text", "id": "mega_image_caption", "label": "Menu panel image caption" },
+    { "type": "link_list", "id": "secondary_menu", "label": "Extra links in mobile menu" },
+    { "type": "header", "content": "Behavior" },
+    {
+      "type": "select",
+      "id": "sticky",
+      "label": "Sticky top bar",
+      "options": [
+        { "value": "none", "label": "Off" },
+        { "value": "always", "label": "Always visible" },
+        { "value": "scroll_up", "label": "Hide on scroll down" }
+      ],
+      "default": "scroll_up",
+      "info": "For phones and the Top bar layout. The side rail always stays in place."
+    },
+    { "type": "checkbox", "id": "show_border", "label": "Line under the top bar", "default": true },
+    { "type": "header", "content": "Actions" },
+    { "type": "checkbox", "id": "show_search", "label": "Show search", "default": true },
+    { "type": "checkbox", "id": "show_account", "label": "Show account", "default": true },
+    { "type": "checkbox", "id": "show_saved", "label": "Show saved items", "info": "Needs Theme settings > Saved items", "default": false },
+    { "type": "checkbox", "id": "show_language", "label": "Show language selector on desktop", "info": "Appears when your store has more than one language", "default": true },
+    { "type": "checkbox", "id": "show_country", "label": "Show country and currency selector on desktop", "info": "Appears when you sell in more than one country", "default": false },
+    { "type": "header", "content": "Mobile menu" },
+    { "type": "checkbox", "id": "drawer_show_whatsapp", "label": "Show WhatsApp", "info": "Uses the number in Theme settings > WhatsApp", "default": true },
+    { "type": "checkbox", "id": "drawer_show_localization", "label": "Show language and country", "default": true },
+    { "type": "checkbox", "id": "drawer_show_social", "label": "Show social icons", "default": true }
+  ]
+}
+{% endschema %}
