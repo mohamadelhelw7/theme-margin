@@ -47,6 +47,7 @@ A premium Online Store 2.0 theme for calm, premium casual wear: linen, knitwear,
 **Product cards** are catalogue plates: the photo, an italic caption with the plate number and type, then the name and price on one line.
 
 **Also included:**
+- **Upsells:** Pair it with (rows, spotlight, slider or quick view), Product add-ons (checkboxes, tiles or switches), an Offer banner, Free shipping progress on the product page, and a Bundle builder section.
 - **Merchandising:** the moving announcement bar, product upsells in three styles, the before and after slider and the delivery timeline.
 - **Customer care:** a Customer support section and the Reels video section.
 - **Cart:** a cart upsell and an optional free shipping bar, in the drawer and on the cart page.

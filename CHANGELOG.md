@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.1.0
+- Five new upsell types, all optional. On the product page, under Add block → Upsells:
+  - Pair it with: products with their own add button, as rows, a spotlight box, a slider of cards, or rows with a Quick view button.
+  - Product add-ons: extras that go to the cart together with the product, as checkbox rows, tiles that show a check, or cards with a switch.
+  - Offer banner: an image or icon, a heading and a line of text for a real offer, in a dashed, filled or outlined frame.
+  - Free shipping progress: a bar with a "You" marker that updates when the cart changes.
+- New Bundle builder section: shoppers fill a set number of slots from one or more collections and add the whole bundle in one click. The new bundle page template uses it.
+- Setup guide: a new Upsells and bundles section, in English and Arabic.
+
 ## 1.0.0
 - First release of Margin, a theme for calm casual wear brands. It's set like a printed catalogue, with white pages, black type, wide margins and numbered plates with italic captions.
 - New sections: Margin header (side rail or top bar), Plate hero, Chapters, Letters and Margin footer.
